@@ -35,7 +35,7 @@ jpt.real <- lsp.jptable(p)
 
 # maximize geometric mean hpr after 4 months
 # accept a 20% probability of a 20% drawdown
-lsp.optimize(jpt.real,horizon=4,max.probprofit=FALSE,use.drawdown=TRUE,acceptable.percent=0.5,b=0.8,DEcontrol=list(NP=40,CR=0,F=0.6))
+lsp.optimize(jpt.real,horizon=4,max.probprofit=TRUE,use.drawdown=TRUE,acceptable.percent=0.2,b=0.8,DEcontrol=list(NP=40))
 
 
 
