@@ -5,7 +5,7 @@ require(quantmod)
 
 # build the joint probability table by hand
 probs <- rep(0.25,times=4)
-plays <- rbind(c(2,2),c(2,-1),c(-1,-1),c(-1,2))pron
+plays <- rbind(c(2,2),c(2,-1),c(-1,-1),c(-1,2))
 
 jpt.twocoins <- as.data.frame(cbind(probs,plays))
 names(jpt.twocoins) <- c("probability","coin1","coin2")
