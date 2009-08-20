@@ -25,11 +25,15 @@ lsp.optimize <- function(jpt, DEcontrol=list(), MAXCYCLES=18, sigmas=5.0, error.
 	
 	msnames <- colnames(jpt)[-1]
 	if (length(msnames) == 1) {
-		msnames <- .jarray(msnames, "S")
+		msnames.jcall <- .jarray(msnames, "S")
+	} else {
+		msnames.jcall <- msnames
 	}
 	
 	if (length(bestf) == 1) {
-		bestf <- .jarray(bestf, "D")
+		bestf.jcall <- .jarray(bestf, "D")
+	} else {
+		bestf.jcall <- bestf
 	}
 	
 	probs <- jpt[,1]
@@ -37,7 +41,7 @@ lsp.optimize <- function(jpt, DEcontrol=list(), MAXCYCLES=18, sigmas=5.0, error.
 	d <- dim(plays)
 	
 	if (max.probprofit) {
-		.jcall(RRDRPP,"Z","test",msnames,bestf,as.vector(probs),as.vector(t(plays)),as.integer(d))
+		.jcall(RRDRPP,"Z","test",msnames.jcall,bestf.jcall,as.vector(probs),as.vector(t(plays)),as.integer(d))
 		probprofitathorizon <- .jfield(RRDRPP,"D","probprofitathorizon")
 		percentrdhit <- .jfield(RRDRPP,"D","percentRDhit")
 		zminus <- bestf[length(bestf)-1]
@@ -56,7 +60,7 @@ lsp.optimize <- function(jpt, DEcontrol=list(), MAXCYCLES=18, sigmas=5.0, error.
 					"\n")
 		}
 	} else {
-		.jcall(RRDR,"Z","test",msnames,bestf,as.vector(probs),as.vector(t(plays)),as.integer(d))
+		.jcall(RRDR,"Z","test",msnames.jcall,bestf.jcall,as.vector(probs),as.vector(t(plays)),as.integer(d))
 		percentrdhit <- .jfield(RRDR,"D","percentRDhit")
 		gab <- .jfield(RRDR,sig=NULL,"gab")
 		asymptote <- .jfield(gab,"D","asymptote")

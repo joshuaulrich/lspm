@@ -5,7 +5,9 @@
 	}
 	
 	if (length(f) == 1) {
-		f <- .jarray(f, "D")
+		f.jcall <- .jarray(f, "D")
+	} else {
+		f.jcall <- f
 	}
 	
 	probs <- jpt[,1]
@@ -13,7 +15,7 @@
 	d <- dim(plays)
 	
 	if (max.probprofit) {
-		passed <- .jcall(RRDRPP,"Z","test",msnames,f,as.vector(probs),as.vector(t(plays)),as.integer(d))
+		passed <- .jcall(RRDRPP,"Z","test",msnames,f.jcall,as.vector(probs),as.vector(t(plays)),as.integer(d))
 		if(passed) {
 			probprofitathorizon <- .jfield(RRDRPP,"D","probprofitathorizon")
 			return(-probprofitathorizon)
@@ -23,7 +25,7 @@
 	} else {
 		g <- .findg(f,jpt,RRDR)
 		if(g > 1) {
-			passed <- .jcall(RRDR,"Z","test",msnames,f,as.vector(probs),as.vector(t(plays)),as.integer(d))
+			passed <- .jcall(RRDR,"Z","test",msnames,f.jcall,as.vector(probs),as.vector(t(plays)),as.integer(d))
 			if(passed) {
 				return(-g)
 			} else {
