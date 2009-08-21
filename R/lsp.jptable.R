@@ -8,5 +8,5 @@ lsp.jptable <- function(lsp.portfolio) {
 	unique.rows <- which( c(TRUE, !equal.to.previous ) )
 	jpt <- cbind( probability, lsp.portfolio[order.lsp.portfolio[ unique.rows ], ,drop=F] )
 	rownames(jpt) <- NULL
-	return(jpt)
+	return(as.matrix(jpt))
 }

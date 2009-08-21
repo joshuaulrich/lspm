@@ -7,8 +7,8 @@ require(quantmod)
 probs <- rep(0.25,times=4)
 plays <- rbind(c(2,2),c(2,-1),c(-1,-1),c(-1,2))
 
-jpt.twocoins <- as.data.frame(cbind(probs,plays))
-names(jpt.twocoins) <- c("probability","coin1","coin2")
+jpt.twocoins <- cbind(probs,plays)
+colnames(jpt.twocoins) <- c("probability","coin1","coin2")
 
 # maximize geometric mean hpr after 5 tosses
 # accept a 20% probability of a 20% drawdown
