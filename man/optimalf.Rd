@@ -15,8 +15,8 @@
     each element in \code{trades} }
   \item{maxLoss}{ A replacement for the actual maximum loss in
     \code{trades} }
-  \item{revNegative}{ Should we reverse the sign for each element in
-    \code{trades} to achive a positive expected value? }
+  \item{revNegative}{ Reverse the sign of each element in \code{trades}
+    to achive a positive expected value (if necessary)? }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
