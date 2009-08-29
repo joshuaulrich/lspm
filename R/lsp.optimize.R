@@ -18,7 +18,13 @@
 #
 
 lsp.optimize <- function(jpt, DEcontrol=list(), MAXCYCLES=18, sigmas=5.0, error.size=0.01, use.drawdown=TRUE, acceptable.percent=0.2, horizon=30, b=0.8, max.probprofit=TRUE, target.return=0.02,zminusmin=-1,zplusmin=-1) {
-	RRDR <- .jnew("com/leveragespacemodel/RRDRTestRaw",as.integer(MAXCYCLES),sigmas,error.size,use.drawdown,acceptable.percent,as.integer(horizon),b)
+	# Check that expected value is > 0
+        EV <- sum(rowSums(jpt[,-1])*jpt[,1])
+        if(EV <= 0 && !max.probprofit) {
+          stop("'jpt' has negative expected value of ", EV)
+        }
+
+        RRDR <- .jnew("com/leveragespacemodel/RRDRTestRaw",as.integer(MAXCYCLES),sigmas,error.size,use.drawdown,acceptable.percent,as.integer(horizon),b)
 	RRDRPP <- .jnew("com/leveragespacemodel/RRDRPPTestRaw",as.integer(MAXCYCLES),sigmas,error.size,use.drawdown,acceptable.percent,as.integer(horizon),b,target.return)
 
 	if(max.probprofit) {

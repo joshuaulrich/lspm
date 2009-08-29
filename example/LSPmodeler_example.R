@@ -1,4 +1,4 @@
-require(LSPmodeler)
+require(LSPM)
 require(quantmod)
 
 ## two simultanious coin toss example
@@ -36,7 +36,4 @@ jpt.real <- lsp.jptable(p)
 # maximize probability of profit after 4 months
 # accept a 20% probability of a 20% drawdown
 lsp.optimize(jpt.real,horizon=4,max.probprofit=TRUE,use.drawdown=TRUE,acceptable.percent=0.2,b=0.8,DEcontrol=list(NP=40))
-
-
-
 

@@ -1,26 +1,29 @@
-\name{optimalf}
+\name{GHPR}
 \Rdversion{1.1}
-\alias{optimalf}
-\title{ Optimal f }
+\alias{GHPR}
+\title{ Geometric Holding Period Return }
 \description{
-  Find optimal f for a set of trades
+  Find geometric holding period return for a set of trades
 }
 \usage{
-  optimalf(trades, probs=NULL, maxLoss=NULL)
+  GHPR(f, trades, probs=NULL, maxLoss=NULL)
 }
 \arguments{
-  \item{trades}{ A univariate series of trade results (either dollar 
-    amounts or returns) }
+  \item{f}{ f value to use (need not be optimal f). \code{f} must
+    have length equal to the number of columns of \code{trades} }
+  \item{trades}{ A univariate or multivariate series of trade
+    results (either dollar amounts or returns) }
   \item{probs}{ A univariate series of probablities corresponding to
     each element in \code{trades} }
   \item{maxLoss}{ A replacement for the actual maximum loss in
-    \code{trades} }
+    \code{trades}. \code{maxLoss} must have length equal to the
+    number of columns of \code{trades} }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-  \item{f}{ Optimal f }
+  Geometric holding period return
 }
 \references{
   Ralph Vince, The Handbook of Portfolio Mathematics

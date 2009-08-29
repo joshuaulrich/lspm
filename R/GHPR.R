@@ -17,9 +17,13 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-optimalf <- function(trades, probs=NULL, maxLoss=NULL) {
+GHPR <- function(f, trades, probs=NULL, maxLoss=NULL) {
 
   # Author: Joshua Ulrich
+  
+  if(length(f) != NCOL(trades)) {
+    stop("length(f) must equal ncol(trades)")
+  }
   
   if (sum(trades*probs) < 0) {
     stop("'trades' (and 'probs') has expected value <= 0")
@@ -36,8 +40,7 @@ optimalf <- function(trades, probs=NULL, maxLoss=NULL) {
   if (is.null(maxLoss)) maxLoss <- min(trades)
   if (maxLoss >= 0) stop("must have at least one negative trade")
 
-  res <- optimize(GHPR, interval=c(0,1), trades=trades,
-                 probs=probs, maxLoss=maxLoss, maximum=TRUE)[[1]]
+  res <- prod( (1+f*(-trades/maxLoss)) ^ probs ) ^ (1/sum(probs))
 
   return(res)
 }
