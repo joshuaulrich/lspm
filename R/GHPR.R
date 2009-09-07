@@ -25,22 +25,27 @@ GHPR <- function(f, trades, probs=NULL, maxLoss=NULL) {
     stop("length(f) must equal ncol(trades)")
   }
   
-  if (sum(trades*probs) < 0) {
-    stop("'trades' (and 'probs') has expected value <= 0")
+  if(length(maxLoss) != NCOL(trades)) {
+    stop("length(maxLoss) must equal ncol(trades)")
+  }
+  if(is.null(maxLoss)) {
+    maxLoss <- sapply(1:NCOL(trades), function(i) min(as.matrix(trades)[,i]))
+  }
+  if(any(maxLoss >= 0)) {
+    stop("all 'trades' columns must have at least one negative trade")
   }
 
-  if (is.null(probs)) {
+  if(is.null(probs)) {
     probs <- rep(1/NROW(trades),NROW(trades))
   } else {
-    if (NROW(trades) != NROW(probs)) {
+    if(NROW(trades) != NROW(probs)) {
       stop("'trades' and 'probs' must be same length")
     }
   }
 
-  if (is.null(maxLoss)) maxLoss <- min(trades)
-  if (maxLoss >= 0) stop("must have at least one negative trade")
-
-  res <- prod( (1+f*(-trades/maxLoss)) ^ probs ) ^ (1/sum(probs))
+  hpr <- as.matrix(-f * trades / maxLoss)
+  #res <- prod( (1+hpr)^probs ) ^ (1/sum(probs))
+  res <- prod( sapply(1:NROW(hpr), function(i) (1+sum(hpr[i,]))^probs[i]) ) ^ (1/sum(probs))
 
   return(res)
 }
