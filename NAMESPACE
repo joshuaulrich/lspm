@@ -1,2 +1,4 @@
+useDynLib(LSPM)
+
 import(rJava)
 exportPattern("^[^\\.]")
