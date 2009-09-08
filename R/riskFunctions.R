@@ -43,7 +43,8 @@ riskRuin <- function(DD, horizon, error=0.001, sigma=3, f, trades, probs=NULL, m
   }
 
   # This should work on multiple columns
-  hpr <- as.matrix(-f * trades / maxLoss)
+  #hpr <- as.matrix(-f * trades / maxLoss)
+  hpr <- sapply(1:NCOL(trades), function(i) -f[i]*trades[,i]/maxLoss[i])
   
   # In case there are multiple columns
   NR <- NROW(hpr)
@@ -118,7 +119,8 @@ riskDrawdown <- function(DD, horizon, error=0.001, sigma=3, f, trades, probs=NUL
   }
 
   # This should work on multiple columns
-  hpr <- as.matrix(-f * trades / maxLoss)
+  #hpr <- as.matrix(-f * trades / maxLoss)
+  hpr <- sapply(1:NCOL(trades), function(i) -f[i]*trades[,i]/maxLoss[i])
   
   # In case there are multiple columns
   NR <- NROW(hpr)

@@ -142,6 +142,7 @@
   # http://msdn.microsoft.com/en-us/library/aa302371.aspx
   # http://en.wikipedia.org/wiki/Factoradic
 
+  # This checking should be moved to C
   if(replace) {
     N <- n^r
   } else {
@@ -149,7 +150,7 @@
   }
   if(i > N) stop('index larger than number of permutations')
   
-  res <- .Call('nPri', n, r, i, replace)
+  res <- .Call('nPri', n, r, i-1, replace, PACKAGE="LSPM")
   
   # Only return requested elements
   res <- res[1:r]
