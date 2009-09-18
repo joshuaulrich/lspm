@@ -150,7 +150,7 @@
   }
   if(i > N) stop('index larger than number of permutations')
   
-  res <- .Call('nPri', n, r, i-1, replace, PACKAGE="LSPM")
+  res <- .Call('nPri', n, r, i-1, replace, PACKAGE="LSPM")+1
   
   # Only return requested elements
   res <- res[1:r]

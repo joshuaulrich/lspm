@@ -41,7 +41,7 @@ GHPR <- function(f, trades, probs=NULL, maxLoss=NULL) {
   }
 
   #hpr <- as.matrix(-f * trades / maxLoss)
-  hpr <- sapply(1:NCOL(trades), function(i) -f[i]*trades[,i]/maxLoss[i])
+  hpr <- sapply(1:NCOL(trades), function(i) -f[i]*as.matrix(trades)[,i]/maxLoss[i])
   #res <- prod( (1+hpr)^probs ) ^ (1/sum(probs))
   res <- prod( sapply(1:NROW(hpr), function(i) max(0,(1+sum(hpr[i,])))^probs[i]) ) ^ (1/sum(probs))
 

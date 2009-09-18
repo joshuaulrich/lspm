@@ -17,7 +17,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-optimalf <- function(trades, probs=NULL, maxLoss=NULL) {
+optimalf <- function(trades, probs=NULL, maxLoss=NULL, constraint=NULL, ...) {
 
   # Author: Joshua Ulrich
   
@@ -32,12 +32,41 @@ optimalf <- function(trades, probs=NULL, maxLoss=NULL) {
       stop("'trades' and 'probs' must be same length")
     }
   }
+  if(is.null(maxLoss)) {
+    maxLoss <- sapply(1:NCOL(trades), function(i) min(as.matrix(trades)[,i]))
+  }
+  if(any(maxLoss >= 0)) {
+    stop("all 'trades' columns must have at least one negative trade")
+  }
 
-  if (is.null(maxLoss)) maxLoss <- min(trades)
-  if (maxLoss >= 0) stop("must have at least one negative trade")
+  fun <- function(f, trades, probs, maxLoss, constraint, ...) {
+    G <- GHPR(f=f, trades=trades, probs=probs, maxLoss=maxLoss)
+    if(G > 1) {
+      cons <- 0
+      # The intent here is to allow any constraint function / values
+      # to be passed to the optimizer.
+      # The portion of the list after '...' should be contained in the
+      # soon-to-be-created lsp class.
+      if(!is.null(constraint)) {
+        cons <- do.call(constraint, list(..., f=f, trades=trades,
+                        probs=probs, maxLoss=maxLoss))
+      }
+      if(cons >= 0.2) {
+        return(Inf)
+      } else {
+        return(-G)
+      }
+    } else {
+      return(Inf)
+    }
 
-  res <- optimize(GHPR, interval=c(0,1), trades=trades,
-                 probs=probs, maxLoss=maxLoss, maximum=TRUE)[[1]]
+  }
 
+  l <- rep(0,NCOL(trades))
+  u <- rep(1,NCOL(trades))
+  de <- DEoptim(fun,lower=l,upper=u,trades=trades,probs=probs,maxLoss=maxLoss,constraint=constraint,...)
+
+  res <- list(f=de$optim$bestmem, G=de$optim$bestval)
+  names(res$f) <- colnames(trades)
   return(res)
 }

@@ -49,10 +49,10 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
   }
 
   // get the first element (everything from R is a vector)
-  int_n = *(INTEGER(n));
-  int_r = *(INTEGER(r));
-  int_i = *(INTEGER(i))-1;            // account for one-based indexing
-  int_replace = *INTEGER(replace);
+  int_n = INTEGER(n)[0];
+  int_r = INTEGER(r)[0];
+  int_i = INTEGER(i)[0];
+  int_replace = INTEGER(replace)[0];
 
   if ( int_replace ) {
     // Permutations WITH replacement
@@ -60,7 +60,7 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
     int_result = INTEGER(result);
 
     for (j=0; j < int_r; ++j) {
-      int_result[int_r-j-1] = ( (long)(int_i/pow(int_n,j)) % int_n ) + 1;
+      int_result[int_r-j-1] = ( (long)(int_i/pow(int_n,j)) % int_n );
     }
   } else {
     // Permutations WITHOUT replacement
@@ -91,7 +91,7 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
     }
     // Step #2 - Convert factoradic to permuatation
     for (j = 0; j < int_n; ++j) {
-      factoradic[j] = ++factoradic[j];
+      ++factoradic[j];
     }
     // Set right-most element to 1.
     int_result[int_n-1] = 1;  
@@ -103,6 +103,11 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
           ++int_result[k];
       }
     }
+    // Put in zero-based form
+    for (j = 0; j < int_n; ++j) {
+      --int_result[j];
+    }
+
   }
 
   UNPROTECT(P);

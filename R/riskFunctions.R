@@ -44,7 +44,7 @@ riskRuin <- function(DD, horizon, error=0.001, sigma=3, f, trades, probs=NULL, m
 
   # This should work on multiple columns
   #hpr <- as.matrix(-f * trades / maxLoss)
-  hpr <- sapply(1:NCOL(trades), function(i) -f[i]*trades[,i]/maxLoss[i])
+  hpr <- sapply(1:NCOL(trades), function(i) -f[i]*as.matrix(trades)[,i]/maxLoss[i])
   
   # In case there are multiple columns
   NR <- NROW(hpr)
@@ -120,11 +120,11 @@ riskDrawdown <- function(DD, horizon, error=0.001, sigma=3, f, trades, probs=NUL
 
   # This should work on multiple columns
   #hpr <- as.matrix(-f * trades / maxLoss)
-  hpr <- sapply(1:NCOL(trades), function(i) -f[i]*trades[,i]/maxLoss[i])
+  hpr <- sapply(1:NCOL(trades), function(i) -f[i]*as.matrix(trades)[,i]/maxLoss[i])
   
   # In case there are multiple columns
   NR <- NROW(hpr)
-  res <- sapply(1:NR, function(i) (1+sum(hpr[i,])))
+  hprPort <- sapply(1:NR, function(i) (1+sum(hpr[i,])))
 
   nsamp <- ( (sigma/error) ^ 2 ) * 0.25
   nperm <- NR ^ horizon
@@ -134,25 +134,28 @@ riskDrawdown <- function(DD, horizon, error=0.001, sigma=3, f, trades, probs=NUL
   # This will be uncommented once I finish my R-based
   # permutation finder. -- JMU
   if(nperm < nsamp) {
-    for( i in 1:nperm ) {
-      perm <- .nPri(NR, horizon, i, replace=TRUE)
-      hprPerm <- res[perm]
-      probPerm <- prod( probs[perm] )
+    res <- .Call('riskRD', DD, horizon, hprPort, probs, FALSE, 1, nperm, PACKAGE="LSPM")
+    failProb <- res[1]
+    sumProb <- res[2]
+    #for( i in 1:nperm ) {
+    #  perm <- .nPri(NR, horizon, i, replace=TRUE)
+    #  hprPerm <- hprPort[perm]
+    #  probPerm <- prod( probs[perm] )
 
-      cumhpr <- cumprod(c(1,hprPerm))
-      cumhpr <- cumhpr/cummax(cumhpr)-(1-DD)
-      if( any(cumhpr <= 0) ) {
-        failProb <- failProb + probPerm
-      }
-      sumProb <- sumProb + probPerm
-    }
+    #  cumhpr <- cumprod(c(1,hprPerm))
+    #  cumhpr <- cumhpr/cummax(cumhpr)-(1-DD)
+    #  if( any(cumhpr <= 0) ) {
+    #    failProb <- failProb + probPerm
+    #  }
+    #  sumProb <- sumProb + probPerm
+    #}
 
   } else {
     permCount <- 1
     while( permCount <= nsamp && permCount <= nperm ) {
         
       perm <- sample.int(NR, horizon, replace=TRUE)
-      hprPerm <- res[perm]
+      hprPerm <- hprPort[perm]
       probPerm <- prod( probs[perm] )
 
       cumhpr <- cumprod(hprPerm)
