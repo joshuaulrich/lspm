@@ -66,7 +66,7 @@ optimalf <- function(trades, probs=NULL, maxLoss=NULL, constraint=NULL, ...) {
   u <- rep(1,NCOL(trades))
   de <- DEoptim(fun,lower=l,upper=u,trades=trades,probs=probs,maxLoss=maxLoss,constraint=constraint,...)
 
-  res <- list(f=de$optim$bestmem, G=de$optim$bestval)
+  res <- list(f=de$optim$bestmem, G=-de$optim$bestval)
   names(res$f) <- colnames(trades)
   return(res)
 }
