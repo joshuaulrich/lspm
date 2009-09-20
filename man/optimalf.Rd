@@ -6,41 +6,40 @@
   Find optimal f for a set of trades
 }
 \usage{
-  optimalf(trades, probs=NULL, maxLoss=NULL)
+  optimalf(lsp, constrFun=NULL, constrVal=NULL, ...)
 }
 \arguments{
-  \item{trades}{ A univariate series of trade results (either dollar 
-    amounts or returns) }
-  \item{probs}{ A univariate series of probablities corresponding to
-    each element in \code{trades} }
-  \item{maxLoss}{ A replacement for the actual maximum loss in
-    \code{trades} }
+  \item{lsp}{ A \code{lsp} object. }
+  \item{constrFun}{ A string naming the constraint function. }
+  \item{constrVal}{ The value of the constraint function that should
+    not be exceeded. }
+  \item{\dots}{ Parameters to be passed to \code{constrFun}. }
 }
-\details{
+%\details{
 %%  ~~ If necessary, more details than the description above ~~
-}
+%}
 \value{
   \item{f}{ Optimal f }
+  \item{G}{ GHPR at the optimal f }
 }
 \references{
   Ralph Vince, The Handbook of Portfolio Mathematics
 }
 \author{ Joshua Ulrich }
-\note{
+%\note{
 %%  ~~further notes~~
-}
+%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
+%\seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-}
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-}
+%}
+%\examples{
+%##---- Should be DIRECTLY executable !! ----
+%##-- ==>  Define data, use random,
+%##--	or do  help(data=index)  for the standard data sets.
+%}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ ts }

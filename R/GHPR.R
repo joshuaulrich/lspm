@@ -23,7 +23,8 @@ GHPR <- function(lsp) {
   
   lsp$events <- HPR(lsp)-1
 
-  res <- sapply(1:NR, function(i) max(0,(1+sum(lsp$events[i,])))^lsp$probs[i])
+  #res <- sapply(1:NR, function(i) max(0,(1+sum(lsp$events[i,])))^lsp$probs[i])
+  res <- unlist(lapply(1:NR, function(i) max(0,(1+sum(lsp$events[i,])))^lsp$probs[i]))
   res <- prod(res)^(1/sum(lsp$probs))
   return(res)
 }

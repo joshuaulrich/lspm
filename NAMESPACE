@@ -1,6 +1,13 @@
 useDynLib(LSPM)
 
-import(rJava)
-exportPattern("^[^\\.]")
+export(GHPR)
+export(HPR)
+
+export(lsp)
+
+export(optimalf)
+
+export(riskDrawdown)
+export(riskRuin)
 
 S3method(print,lsp)

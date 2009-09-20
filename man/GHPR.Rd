@@ -9,33 +9,32 @@
   GHPR(lsp)
 }
 \arguments{
-  \item{lsp}{ An object of class 'lsp' }
+  \item{lsp}{ A \code{lsp} object. }
 }
-\details{
+%\details{
 %%  ~~ If necessary, more details than the description above ~~
-}
+%}
 \value{
-  Geometric holding period return
+  The geometric holding period return
 }
 \references{
   Ralph Vince, The Handbook of Portfolio Mathematics
 }
 \author{ Joshua Ulrich }
-\note{
+%\note{
 %%  ~~further notes~~
-}
+%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
   \code{\link{HPR}}
 }
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-}
+%\examples{
+%##---- Should be DIRECTLY executable !! ----
+%##-- ==>  Define data, use random,
+%##--	or do  help(data=index)  for the standard data sets.
+%}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ ts }

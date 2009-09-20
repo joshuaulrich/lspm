@@ -1,3 +1,3 @@
-.onLoad <- function(libname, pkgname) {
-	.jpackage(pkgname)
-}
+#.onLoad <- function(libname, pkgname) {
+#  .jpackage(pkgname)
+#}
