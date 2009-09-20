@@ -17,39 +17,17 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-riskRuin <- function(DD, horizon, error=0.001, sigma=3, f, trades, probs=NULL, maxLoss=NULL, snow=NULL) {
+riskRuin <- function(lsp, DD, horizon, error=0.001, sigma=3, snow=NULL) {
 
-  # All this checking should go into the lsp class constructor
-  if(length(f) != NCOL(trades)) {
-    stop("length(f) must equal ncol(trades)")
-  }
-
-  if(is.null(maxLoss)) {
-    maxLoss <- sapply(1:NCOL(trades), function(i) min(as.matrix(trades)[,i]))
-  }
-  if(length(maxLoss) != NCOL(trades)) {
-    stop("length(maxLoss) must equal ncol(trades)")
-  }
-  if(any(maxLoss >= 0)) {
-    stop("all 'trades' columns must have at least one negative trade")
-  }
-
-  if(is.null(probs)) {
-    probs <- rep(1/NROW(trades),NROW(trades))
-  } else {
-    if(NROW(trades) != NROW(probs)) {
-      stop("'trades' and 'probs' must be same length")
-    }
-  }
-
-  # This should work on multiple columns
-  #hpr <- as.matrix(-f * trades / maxLoss)
-  hpr <- sapply(1:NCOL(trades), function(i) -f[i]*as.matrix(trades)[,i]/maxLoss[i])
+  trades <- lsp$events
+  probs <- lsp$probs
+  maxLoss <- lsp$maxLoss
+  f <- lsp$f
   
-  # In case there are multiple columns
-  NR <- NROW(hpr)
-  hprPort <- sapply(1:NR, function(i) (1+sum(hpr[i,])))
+  # Portfolio HPR
+  hprPort <- HPR(lsp, portfolio=TRUE)
 
+  NR <- NROW(trades)
   nsamp <- ( (sigma/error) ^ 2 ) * 0.25
   nperm <- NR ^ horizon
   
@@ -98,39 +76,17 @@ riskRuin <- function(DD, horizon, error=0.001, sigma=3, f, trades, probs=NULL, m
   return(out)
 }
 
-riskDrawdown <- function(DD, horizon, error=0.001, sigma=3, f, trades, probs=NULL, maxLoss=NULL, snow=NULL) {
+riskDrawdown <- function(lsp, DD, horizon, error=0.001, sigma=3, snow=NULL) {
 
-  # All this checking should go into the lsp class constructor
-  if(length(f) != NCOL(trades)) {
-    stop("length(f) must equal ncol(trades)")
-  }
-
-  if(is.null(maxLoss)) {
-    maxLoss <- sapply(1:NCOL(trades), function(i) min(as.matrix(trades)[,i]))
-  }
-  if(length(maxLoss) != NCOL(trades)) {
-    stop("length(maxLoss) must equal ncol(trades)")
-  }
-  if(any(maxLoss >= 0)) {
-    stop("all 'trades' columns must have at least one negative trade")
-  }
-
-  if(is.null(probs)) {
-    probs <- rep(1/NROW(trades),NROW(trades))
-  } else {
-    if(NROW(trades) != NROW(probs)) {
-      stop("'trades' and 'probs' must be same length")
-    }
-  }
-
-  # This should work on multiple columns
-  #hpr <- as.matrix(-f * trades / maxLoss)
-  hpr <- sapply(1:NCOL(trades), function(i) -f[i]*as.matrix(trades)[,i]/maxLoss[i])
+  trades <- lsp$events
+  probs <- lsp$probs
+  maxLoss <- lsp$maxLoss
+  f <- lsp$f
   
-  # In case there are multiple columns
-  NR <- NROW(hpr)
-  hprPort <- sapply(1:NR, function(i) (1+sum(hpr[i,])))
+  # Portfolio HPR
+  hprPort <- HPR(lsp, portfolio=TRUE)
 
+  NR <- NROW(trades)
   nsamp <- ( (sigma/error) ^ 2 ) * 0.25
   nperm <- NR ^ horizon
   

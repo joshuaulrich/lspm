@@ -1,21 +1,23 @@
-\name{GHPR}
+\name{HPR}
 \Rdversion{1.1}
-\alias{GHPR}
-\title{ Geometric Holding Period Return }
+\alias{HPR}
+\title{ Holding Period Return }
 \description{
-  Find geometric holding period return for a set of trades
+  Find holding period return for a set of trades
 }
 \usage{
-  GHPR(lsp)
+  HPR(lsp, portfolio=FALSE)
 }
 \arguments{
   \item{lsp}{ An object of class 'lsp' }
+  \item{portfolio}{ If \code{TRUE}, only the total portfolio HPR
+    is returned }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-  Geometric holding period return
+  Holding period returns
 }
 \references{
   Ralph Vince, The Handbook of Portfolio Mathematics
@@ -28,7 +30,7 @@
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-  \code{\link{HPR}}
+  \code{\link{GHPR}}
 }
 \examples{
 ##---- Should be DIRECTLY executable !! ----

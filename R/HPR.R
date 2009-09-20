@@ -17,13 +17,15 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-GHPR <- function(lsp) {
+HPR <- function(lsp, portfolio=FALSE) {
   if(class(lsp) != "lsp") stop("not a 'lsp' object")
+  NC <- NCOL(lsp$events)
   NR <- NROW(lsp$events)
   
-  lsp$events <- HPR(lsp)-1
+  hpr <- sapply(1:NC, function(i) 1-lsp$f[i]*lsp$events[,i]/lsp$maxLoss[i])
 
-  res <- sapply(1:NR, function(i) max(0,(1+sum(lsp$events[i,])))^lsp$probs[i])
-  res <- prod(res)^(1/sum(lsp$probs))
-  return(res)
+  if(portfolio) {
+    hpr <- sapply(1:NR, function(i) (1+sum(hpr[i,]-1)))
+  }
+  return(as.matrix(hpr))
 }

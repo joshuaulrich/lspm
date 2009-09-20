@@ -17,41 +17,27 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-optimalf <- function(trades, probs=NULL, maxLoss=NULL, constraint=NULL, ...) {
+optimalf <- function(lsp, constrFun=NULL, constrVal=NULL, ...) {
 
   # Author: Joshua Ulrich
   
-  if (sum(trades*probs) < 0) {
-    stop("'trades' (and 'probs') has expected value <= 0")
+  if( GHPR(lsp) <= 1 ) {
+    stop("'events' (and 'probs') has expected value <= 0")
   }
 
-  if (is.null(probs)) {
-    probs <- rep(1/NROW(trades),NROW(trades))
-  } else {
-    if (NROW(trades) != NROW(probs)) {
-      stop("'trades' and 'probs' must be same length")
-    }
-  }
-  if(is.null(maxLoss)) {
-    maxLoss <- sapply(1:NCOL(trades), function(i) min(as.matrix(trades)[,i]))
-  }
-  if(any(maxLoss >= 0)) {
-    stop("all 'trades' columns must have at least one negative trade")
-  }
-
-  fun <- function(f, trades, probs, maxLoss, constraint, ...) {
-    G <- GHPR(f=f, trades=trades, probs=probs, maxLoss=maxLoss)
+  fun <- function(f, lsp, constrFun, constrVal, ...) {
+    lsp$f <- f
+    G <- GHPR(lsp)
     if(G > 1) {
       cons <- 0
       # The intent here is to allow any constraint function / values
       # to be passed to the optimizer.
       # The portion of the list after '...' should be contained in the
       # soon-to-be-created lsp class.
-      if(!is.null(constraint)) {
-        cons <- do.call(constraint, list(..., f=f, trades=trades,
-                        probs=probs, maxLoss=maxLoss))
+      if(!is.null(constrFun)) {
+        cons <- do.call(constrFun, list(lsp, ...))
       }
-      if(cons >= 0.2) {
+      if(cons >= constrVal) {
         return(Inf)
       } else {
         return(-G)
@@ -62,11 +48,12 @@ optimalf <- function(trades, probs=NULL, maxLoss=NULL, constraint=NULL, ...) {
 
   }
 
-  l <- rep(0,NCOL(trades))
-  u <- rep(1,NCOL(trades))
-  de <- DEoptim(fun,lower=l,upper=u,trades=trades,probs=probs,maxLoss=maxLoss,constraint=constraint,...)
+  l <- rep(0,NCOL(lsp$events))
+  u <- rep(1,NCOL(lsp$events))
+  de <- DEoptim(fun, lower=l, upper=u, lsp=lsp,
+                constrFun=constrFun, constrVal=constrVal,...)
 
   res <- list(f=de$optim$bestmem, G=-de$optim$bestval)
-  names(res$f) <- colnames(trades)
+  names(res$f) <- colnames(lsp$events)
   return(res)
 }

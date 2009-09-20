@@ -2,3 +2,5 @@ useDynLib(LSPM)
 
 import(rJava)
 exportPattern("^[^\\.]")
+
+S3method(print,lsp)
