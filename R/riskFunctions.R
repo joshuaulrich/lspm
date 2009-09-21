@@ -17,8 +17,16 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-riskRuin <- function(lsp, DD, horizon, error=0.001, sigma=3, snow=NULL) {
+riskRuin <-
+function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
 
+  if( horizon > calc.max ) {
+    rx <- sapply( 1:calc.max, function(i) riskRuin(lsp, DD,
+      i, error=error, sigma=sigma, snow=snow) )
+    out <- RX.asymptote(rx, horizon, ruin=TRUE)
+    return(out)
+  }
+  
   trades <- lsp$events
   probs <- lsp$probs
   maxLoss <- lsp$maxLoss
@@ -76,8 +84,16 @@ riskRuin <- function(lsp, DD, horizon, error=0.001, sigma=3, snow=NULL) {
   return(out)
 }
 
-riskDrawdown <- function(lsp, DD, horizon, error=0.001, sigma=3, snow=NULL) {
+riskDrawdown <-
+function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
 
+  if( horizon > calc.max ) {
+    rx <- sapply( 1:calc.max, function(i) riskDrawdown(lsp, DD,
+      i, error=error, sigma=sigma, snow=snow) )
+    out <- RX.asymptote(rx, horizon, ruin=FALSE)
+    return(out)
+  }
+  
   trades <- lsp$events
   probs <- lsp$probs
   maxLoss <- lsp$maxLoss
@@ -145,10 +161,10 @@ riskDrawdown <- function(lsp, DD, horizon, error=0.001, sigma=3, snow=NULL) {
   return(res)
 }
   
-RX.asymptote <- function(RX, horizon, RD=FALSE) {
+RX.asymptote <- function(RX, horizon, ruin=FALSE) {
 
-  objFun <- function(params, RX, horizon, RD) {
-    if(RD) {
+  objFun <- function(params, RX, horizon, ruin) {
+    if(!ruin) {
       params[1] <- 1
     }
     res <- params[1] - params[2] * exp( -params[3] * horizon )
@@ -156,9 +172,15 @@ RX.asymptote <- function(RX, horizon, RD=FALSE) {
     return(res)
   }
 
-  out <- DEoptim(objFun, lower=matrix(c(0,0,0)), upper=matrix(c(1,1,1)),
-    RX=D[,2], horizon=D[,1], RD=RD)
+  de <- DEoptim(objFun, lower=c(0,0,0), upper=c(1,1,1),
+    control=list(VTR=1e-6, refresh=-1), RX=RX, horizon=1:NROW(RX), ruin=ruin)
 
+  de.coef <- de$optim$bestmem
+  if(!ruin) {
+    de.coef[1] <- 1
+  }
+  out <- de.coef[1] - de.coef[2] * exp( -de.coef[3] * horizon )
+  names(out) <- NULL
   return(out)
 }
 

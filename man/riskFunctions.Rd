@@ -8,14 +8,17 @@
   Functions to compute the risk of drawdown and risk of ruin
 }
 \usage{
-  riskDrawdown(lsp, DD, horizon, error=0.001, sigma=3, snow=NULL)
-  riskRuin(lsp, DD, horizon, error=0.001, sigma=3, snow=NULL)
+  riskDrawdown(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL)
+  riskRuin(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL)
 }
 \arguments{
   \item{lsp}{ A \code{lsp} object. }
   \item{DD}{ The maximum drawdown (\code{riskDrawdown}) or percentage
     of starting equity at which ruin occurs (\code{riskRuin}). }
   \item{horizon}{ The number of holding periods. }
+  \item{calc.max}{ If \code{horizon} is greater than \code{calc.max}
+    then the risk function will be calculated for \code{horizon=1:calc.max}
+    and the risk at \code{horizon} will be estimated using those values. }
   \item{error}{ Error level to determine permutation sample size. }
   \item{sigma}{ Confidence level to determine permutation sample size. }
   \item{snow}{ An optional \code{snow} object. }
