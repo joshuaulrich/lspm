@@ -19,16 +19,11 @@
 
 HPR <- function(lsp, portfolio=FALSE) {
   if(class(lsp) != "lsp") stop("not a 'lsp' object")
-  NC <- NCOL(lsp$events)
-  NR <- NROW(lsp$events)
   
-  #hpr <- sapply(1:NC, function(i) 1-lsp$f[i]*lsp$events[,i]/lsp$maxLoss[i])
-  hpr <- lapply(1:NC, function(i) 1-lsp$f[i]*lsp$events[,i]/lsp$maxLoss[i])
-  hpr <- matrix(unlist(hpr),ncol=NC,nrow=NR)
+  hpr <- .Call("hpr", lsp, FALSE, PACKAGE="LSPM")
 
   if(portfolio) {
-    #hpr <- sapply(1:NR, function(i) (1+sum(hpr[i,]-1)))
-    hpr <- unlist(lapply(1:NR, function(i) (1+sum(hpr[i,]-1))))
+    hpr <- as.matrix(1 + rowSums(hpr - 1))
   }
-  return(as.matrix(hpr))
+  return(hpr)
 }

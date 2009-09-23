@@ -19,12 +19,9 @@
 
 GHPR <- function(lsp) {
   if(class(lsp) != "lsp") stop("not a 'lsp' object")
-  NR <- NROW(lsp$events)
   
-  lsp$events <- HPR(lsp)-1
-
-  #res <- sapply(1:NR, function(i) max(0,(1+sum(lsp$events[i,])))^lsp$probs[i])
-  res <- unlist(lapply(1:NR, function(i) max(0,(1+sum(lsp$events[i,])))^lsp$probs[i]))
-  res <- prod(res)^(1/sum(lsp$probs))
+  prob <- lsp$probs
+  res <- prod( pmax(0,1+rowSums(HPR(lsp)-1))^prob ) ^ (1/sum(prob))
+  
   return(res)
 }
