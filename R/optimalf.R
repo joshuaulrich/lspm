@@ -36,9 +36,12 @@ optimalf <- function(lsp, constrFun=NULL, constrVal=NULL, ...) {
       # soon-to-be-created lsp class.
       if(!is.null(constrFun)) {
         cons <- do.call(constrFun, list(lsp, ...))
-      }
-      if(cons >= constrVal) {
-        return(Inf)
+        
+        if(cons >= constrVal) {
+          return(Inf)
+        } else {
+          return(-G)
+        }
       } else {
         return(-G)
       }
