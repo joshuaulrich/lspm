@@ -26,7 +26,8 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
 {
   int P=0;
   int j, k;
-  int int_n, int_r, int_i, int_replace;
+  int int_n, int_r, int_replace;
+  double real_i;
   
   SEXP result;
   int *int_result=NULL;
@@ -39,9 +40,9 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
   if(TYPEOF(r) != INTSXP) {
     PROTECT(r = coerceVector(r, INTSXP)); P++;
   }
-  // ensure 'i' is integer
-  if(TYPEOF(i) != INTSXP) {
-    PROTECT(i = coerceVector(i, INTSXP)); P++;
+  // ensure 'i' is real
+  if(TYPEOF(i) != REALSXP) {
+    PROTECT(i = coerceVector(i, REALSXP)); P++;
   }
   // ensure 'replace' is logical
   if(TYPEOF(replace) != LGLSXP) {
@@ -51,7 +52,7 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
   // get the first element (everything from R is a vector)
   int_n = INTEGER(n)[0];
   int_r = INTEGER(r)[0];
-  int_i = INTEGER(i)[0];
+  real_i = REAL(i)[0];
   int_replace = INTEGER(replace)[0];
 
   if ( int_replace ) {
@@ -60,7 +61,8 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
     int_result = INTEGER(result);
 
     for (j=0; j < int_r; ++j) {
-      int_result[int_r-j-1] = ( (long)(int_i/pow(int_n,j)) % int_n );
+      //int_result[int_r-j-1] = ( (long)(int_i/pow(int_n,j)) % int_n );
+      int_result[int_r-j-1] = (long)fmod(real_i/pow(int_n,j), int_n );
     }
   } else {
     // Permutations WITHOUT replacement
@@ -77,7 +79,7 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
         fmult = fmult * j;
       }
       // Apply factorial multiplier
-      int_i = int_i * fmult;
+      real_i = real_i * fmult;
     }
     
     // Algorithm taken from:
@@ -86,8 +88,9 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
     // Step #1 - Find factoradic of i
     int factoradic[int_n];
     for (j = 1; j <= int_n; ++j) {
-      factoradic[int_n-j] = int_i % j;
-      int_i /= j;
+      //factoradic[int_n-j] = int_i % j;
+      factoradic[int_n-j] = (long)fmod(real_i, j);
+      real_i /= j;
     }
     // Step #2 - Convert factoradic to permuatation
     for (j = 0; j < int_n; ++j) {
