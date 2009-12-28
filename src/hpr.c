@@ -38,6 +38,20 @@ SEXP hpr ( SEXP lsp, SEXP port )
   SEXP fval = VECTOR_ELT(lsp, 2);
   SEXP maxloss = VECTOR_ELT(lsp, 3);
 
+  // ensure lsp components are double
+  if(TYPEOF(event) != REALSXP) {
+    PROTECT(event = coerceVector(event, REALSXP)); P++;
+  }
+  if(TYPEOF(prob) != REALSXP) {
+    PROTECT(prob = coerceVector(prob, REALSXP)); P++;
+  }
+  if(TYPEOF(fval) != REALSXP) {
+    PROTECT(fval = coerceVector(fval, REALSXP)); P++;
+  }
+  if(TYPEOF(maxloss) != REALSXP) {
+    PROTECT(maxloss = coerceVector(maxloss, REALSXP)); P++;
+  }
+
   double *d_event = REAL(event);
   double *d_prob = REAL(prob);
   double *d_fval = REAL(fval);
