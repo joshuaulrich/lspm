@@ -1,7 +1,7 @@
 #
 #   LSPM: The Leverage Space Portfolio Modeler
 #
-#   Copyright (C) 2009  Soren MacBeth, Joshua Ulrich, and Ralph Vince
+#   Copyright (C) 2009-2010  Soren MacBeth, Joshua Ulrich, and Ralph Vince
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -17,13 +17,13 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-riskRuin <-
+probRuin <-
 function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
 
   if( horizon > calc.max ) {
-    rx <- sapply( 1:calc.max, function(i) riskRuin(lsp, DD,
-      i, error=error, sigma=sigma, snow=snow) )
-    out <- RX.asymptote(rx, horizon, ruin=TRUE)
+    rd <- sapply( 1:calc.max, function(i) probRuin(lsp, DD,
+      i, calc.max, error=error, sigma=sigma, snow=snow) )
+    out <- RD.asymptote(rd, horizon, ruin=TRUE)
     return(out)
   }
   
@@ -54,7 +54,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   if(is.null(snow)) {
     
     # calculate all the permutations on the local machine
-    res <- .riskRD(c(1,nperm), DD, horizon, hprPort, probs, ruin=TRUE, sample)
+    res <- .probRD(c(1,nperm), DD, horizon, hprPort, probs, ruin=TRUE, sample)
     failProb <- res[1]
     sumProb  <- res[2]
   } else {
@@ -70,7 +70,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
     for(i in 1:ncores) ind <- c(ind, list(ij[(i-1)*2+(1:2)]))
 
     # send the function to the cluster
-    ca <- clusterApply(snow, ind, fun=.riskRD, DD=DD, horizon=horizon,
+    ca <- clusterApply(snow, ind, fun=.probRD, DD=DD, horizon=horizon,
                        hpr=hprPort, probs=probs, ruin=TRUE, sample)
     
     # sum the fail and total probabilities from all the cores
@@ -84,13 +84,13 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   return(out)
 }
 
-riskDrawdown <-
+probDrawdown <-
 function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
 
   if( horizon > calc.max ) {
-    rx <- sapply( 1:calc.max, function(i) riskDrawdown(lsp, DD,
-      i, error=error, sigma=sigma, snow=snow) )
-    out <- RX.asymptote(rx, horizon, ruin=FALSE)
+    rd <- sapply( 1:calc.max, function(i) probDrawdown(lsp, DD,
+      i, calc.max, error, sigma, snow) )
+    out <- RD.asymptote(rd, horizon, ruin=FALSE)
     return(out)
   }
   
@@ -121,7 +121,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   if(is.null(snow)) {
     
     # calculate all the permutations on the local machine
-    res <- .riskRD(c(1,nperm), DD, horizon, hprPort, probs, ruin=FALSE, sample)
+    res <- .probRD(c(1,nperm), DD, horizon, hprPort, probs, ruin=FALSE, sample)
     failProb <- res[1]
     sumProb  <- res[2]
   } else {
@@ -137,7 +137,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
     for(i in 1:ncores) ind <- c(ind, list(ij[(i-1)*2+(1:2)]))
 
     # send the function to the cluster
-    ca <- clusterApply(snow, ind, fun=.riskRD, DD=DD, horizon=horizon,
+    ca <- clusterApply(snow, ind, fun=.probRD, DD=DD, horizon=horizon,
                        hpr=hprPort, probs=probs, ruin=FALSE, sample)
     
     # sum the fail and total probabilities from all the cores
@@ -152,28 +152,28 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   return(out)
 }
 
-.riskRD <- function(range, DD, horizon, hpr, probs, ruin, sample) {
+.probRD <- function(range, DD, horizon, hpr, probs, ruin, sample) {
   # This is a simple function that can be sent to the cluster
   beg <- range[1]
   end <- range[2]
-  res <- .Call('riskRD', beg, end, DD, horizon, hpr, probs,
+  res <- .Call('probRD', beg, end, DD, horizon, hpr, probs,
                          ruin, sample, PACKAGE="LSPM")
   return(res)
 }
   
-RX.asymptote <- function(RX, horizon, ruin=FALSE) {
+RD.asymptote <- function(RD, horizon, ruin=FALSE) {
 
-  objFun <- function(params, RX, horizon, ruin) {
+  objFun <- function(params, RD, horizon, ruin) {
     if(!ruin) {
       params[1] <- 1
     }
     res <- params[1] - params[2] * exp( -params[3] * horizon )
-    res <- sum( (RX - res)^2 )
+    res <- sum( (RD - res)^2 )
     return(res)
   }
 
   de <- DEoptim(objFun, lower=c(0,0,0), upper=c(1,1,1),
-    control=list(VTR=1e-6, trace=FALSE), RX=RX, horizon=1:NROW(RX), ruin=ruin)
+    control=list(VTR=1e-6, refresh=-1), RD=RD, horizon=1:NROW(RD), ruin=ruin)
 
   de.coef <- de$optim$bestmem
   if(!ruin) {

@@ -25,9 +25,10 @@
   Maintainer: Joshua Ulrich <josh.m.ulrich@gmail.com>
 }
 \references{
-  Ralph Vince, The Handbook of Portfolio Mathematics\cr
-  Ralph Vince, The Leverage Space Trading Model
-}
+  Vince, Ralph (2007) \emph{The Handbook of Portfolio Mathematics}.
+  New York: John Wiley & Sons, Inc.\cr
+  Vince, Ralph (2009) \emph{The Leverage Space Trading Model}.
+  New York: John Wiley & Sons, Inc.}
 \keyword{ package }
 %\seealso{
 %~~ Optional links to other man pages, e.g. ~~

@@ -1,9 +1,9 @@
 \name{GHPR}
 \Rdversion{1.1}
 \alias{GHPR}
-\title{ Geometric Holding Period Return }
+\title{ Geometric Average Holding Period Return }
 \description{
-  Find geometric holding period return for a set of trades
+  Find geometric average holding period return for a set of trades
 }
 \usage{
   GHPR(lsp)
@@ -15,10 +15,13 @@
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-  The geometric holding period return
+  The geometric average holding period return
 }
 \references{
-  Ralph Vince, The Handbook of Portfolio Mathematics
+  Vince, Ralph (2007) \emph{The Handbook of Portfolio Mathematics}.
+  New York: John Wiley & Sons, Inc.\cr
+  Vince, Ralph (2009) \emph{The Leverage Space Trading Model}.
+  New York: John Wiley & Sons, Inc.
 }
 \author{ Joshua Ulrich }
 %\note{

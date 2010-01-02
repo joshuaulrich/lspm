@@ -23,8 +23,10 @@
   \item{G}{ GHPR at the optimal f }
 }
 \references{
-  Ralph Vince, The Handbook of Portfolio Mathematics
-}
+  Vince, Ralph (2007) \emph{The Handbook of Portfolio Mathematics}.
+  New York: John Wiley & Sons, Inc.\cr
+  Vince, Ralph (2009) \emph{The Leverage Space Trading Model}.
+  New York: John Wiley & Sons, Inc.}
 \author{ Joshua Ulrich }
 %\note{
 %%  ~~further notes~~

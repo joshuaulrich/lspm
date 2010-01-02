@@ -7,7 +7,7 @@ export(lsp)
 
 export(optimalf)
 
-export(riskDrawdown)
-export(riskRuin)
+export(probDrawdown)
+export(probRuin)
 
 S3method(print,lsp)

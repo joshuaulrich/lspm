@@ -2,7 +2,7 @@
 #
 #   LSPM: The Leverage Space Portfolio Modeler
 #
-#   Copyright (C) 2009  Soren MacBeth, Joshua Ulrich, and Ralph Vince
+#   Copyright (C) 2009-2010  Soren MacBeth, Joshua Ulrich, and Ralph Vince
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include <Rinternals.h>
 //#include "lspm.h"
 
-SEXP riskRD ( SEXP beg, SEXP end, SEXP DD, SEXP horizon,
+SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP horizon,
         SEXP hpr, SEXP prob, SEXP ruin, SEXP sample )
 {
   /* Arguments:
