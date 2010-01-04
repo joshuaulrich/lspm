@@ -172,7 +172,7 @@ RD.asymptote <- function(RD, horizon, ruin=FALSE) {
     return(res)
   }
 
-  de <- DEoptim(objFun, lower=c(0,0,0), upper=c(1,1,1),
+  de <- deoptim(objFun, lower=c(0,0,0), upper=c(1,1,1),
     control=list(VTR=1e-6, refresh=-1), RD=RD, horizon=1:NROW(RD), ruin=ruin)
 
   de.coef <- de$optim$bestmem

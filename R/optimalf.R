@@ -53,7 +53,7 @@ optimalf <- function(lsp, constrFun=NULL, constrVal=NULL, ...) {
 
   l <- rep(0,NCOL(lsp$events))
   u <- rep(1,NCOL(lsp$events))
-  de <- DEoptim(fun, lower=l, upper=u, lsp=lsp,
+  de <- deoptim(fun, lower=l, upper=u, lsp=lsp,
                 constrFun=constrFun, constrVal=constrVal,...)
 
   res <- list(f=de$optim$bestmem, G=-de$optim$bestval)
