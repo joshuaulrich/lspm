@@ -9,5 +9,8 @@ export(optimalf)
 
 export(probDrawdown)
 export(probRuin)
+export(deoptim)
 
 S3method(print,lsp)
+S3method(summary,deoptim)
+S3method(plot,deoptim)

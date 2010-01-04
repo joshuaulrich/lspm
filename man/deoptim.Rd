@@ -151,7 +151,8 @@ deoptim(FUN, lower, upper, control = list(), ...)
   Springer-Verlag. ISBN 0387987932.
 }
 
-\author{David Ardia \email{david.ardia@unifr.ch} for the \R-port;
+\author{David Ardia \email{david.ardia@unifr.ch} for the \R-port with patches by Joshua Ulrich
+  \email{josh.m.ulrich@gmail.com} and Soren Macbeth \email{soren@dopeness.org};
   Rainer Storn \email{storn@icsi.berkeley.edu} for the Differential Evolution algorithm.}
 
 \seealso{\code{\link{deoptim-methods}} for methods on \code{deoptim} object;
