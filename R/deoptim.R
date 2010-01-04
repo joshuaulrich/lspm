@@ -1,11 +1,13 @@
 ##'.onLoad' <- function(lib, pkg){
-##  cat("\nDEoptim package")
+##  cat("\ndeoptim package")
 ##  cat("\nDifferential Evolution algorithm")
 ##  cat("\nAuthor and maintainer : David Ardia <david.ardia@unifr.ch>\n")
 ##}
 
 ## Differential Evolution Optimization
 ## David Ardia -- 20081203
+## patched by Joshua Ulrich and Soren Macbeth
+
 'deoptim' <- function(FUN, lower, upper, control = list(), ...) {  
   if (missing(FUN))
     stop("'FUN' is missing") 
@@ -276,15 +278,15 @@
               pop = pop,
               storepop = storepop))
   
-  attr(r, "class") <- "DEoptim"
+  attr(r, "class") <- "deoptim"
   return(r)
 }
 
-'summary.DEoptim' <- function(object, ...){
+'summary.deoptim' <- function(object, ...){
   digits <- max(5, getOption('digits') - 2)
   z <- object$optim
   
-  cat("\n***** summary of DEoptim object *****",
+  cat("\n***** summary of deoptim object *****",
       "\nbest member   : ", round(z$bestmem, digits),
       "\nbest value    : ", round(z$bestval, digits),
       "\nafter         : ", round(z$iter), "iterations",
@@ -294,7 +296,7 @@
   invisible(z)
 }
 
-'plot.DEoptim' <- function(x, plot.type = c("bestmemit","bestvalit","storepop"), ...){
+'plot.deoptim' <- function(x, plot.type = c("bestmemit","bestvalit","storepop"), ...){
   plot.type <- plot.type[1]
   z <- x$member
   n <- length(z$bestvalit)
