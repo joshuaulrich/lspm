@@ -21,9 +21,9 @@ optimalf <- function(lsp, constrFun=NULL, constrVal=NULL, ...) {
 
   # Author: Joshua Ulrich
   
-  if( GHPR(lsp) <= 1 ) {
-    stop("'events' (and 'probs') has expected value <= 0")
-  }
+  #if( GHPR(lsp) <= 1 ) {
+  #  stop("'events' (and 'probs') has expected value <= 0")
+  #}
 
   fun <- function(f, lsp, constrFun, constrVal, ...) {
     lsp$f <- f
