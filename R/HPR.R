@@ -20,10 +20,7 @@
 HPR <- function(lsp, portfolio=FALSE) {
   if(class(lsp) != "lsp") stop("not a 'lsp' object")
   
-  hpr <- .Call("hpr", lsp, FALSE, PACKAGE="LSPM")
+  hpr <- .Call("hpr", lsp, portfolio, PACKAGE="LSPM")
 
-  if(portfolio) {
-    hpr <- as.matrix(1 + rowSums(hpr - 1))
-  }
   return(hpr)
 }

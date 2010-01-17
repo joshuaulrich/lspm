@@ -67,6 +67,8 @@ SEXP hpr ( SEXP lsp, SEXP port )
   int nc = ncols(event);
   int nr = nrows(event);
 
+  // if portfolio-level HPR is requested
+  double hpr;
   int nc_res;
   if( i_port ) {
     nc_res = 1;
@@ -78,20 +80,23 @@ SEXP hpr ( SEXP lsp, SEXP port )
   PROTECT(result = allocMatrix(REALSXP, nr, nc_res)); P++;
   double *d_result = REAL(result);
 
-  for(j=0; j < nr; j++) {
-    for(i=0; i < nc; i++) {
-      d_result[j+i*nr] = 1 - d_fval[i] * d_event[j+i*nr] / d_maxloss[i];
+  if( i_port ) {
+    for(j=0; j < nr; j++) {
+      hpr = 1;
+      for(i=0; i < nc; i++) {
+        hpr += d_fval[i] * d_event[j+i*nr] / -d_maxloss[i];
+      }
+      d_result[j] = hpr < 0 ? 0 : hpr;
+    }
+  } else {
+    for(j=0; j < nr; j++) {
+      for(i=0; i < nc; i++) {
+        hpr = 1 + d_fval[i] * d_event[j+i*nr] / -d_maxloss[i];
+        d_result[j+i*nr] = hpr < 0 ? 0 : hpr;
+      }
     }
   }
-/*
-  SET_VECTOR_ELT(result, i, "value" );
-    hpr <- lapply(1:NC, function(i) 1 - lsp$f[i] * lsp$events[, 
-        i]/lsp$maxLoss[i])
-    hpr <- matrix(unlist(hpr), ncol = NC, nrow = NR)
-    if (portfolio) {
-      hpr <- unlist(lapply( 1:NR, function(i) (1+sum(hpr[i,]-1)) ))
-    }
-*/
+
   UNPROTECT(P);
   return result;
 }

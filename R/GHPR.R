@@ -21,7 +21,7 @@ GHPR <- function(lsp) {
   if(class(lsp) != "lsp") stop("not a 'lsp' object")
   
   prob <- lsp$probs
-  res <- prod( pmax(0,1+rowSums(HPR(lsp)-1))^prob ) ^ (1/sum(prob))
+  res <- prod( HPR(lsp,portfolio=TRUE)^prob ) ^ (1/sum(prob))
   
   return(res)
 }
