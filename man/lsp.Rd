@@ -6,7 +6,7 @@
   Leverage Space Portfolio object constructor
 }
 \usage{
-  lsp(events, probs=NULL, f=NULL, maxLoss=NULL)
+  lsp(events, probs=NULL, f=NULL, maxLoss=NULL, z=NULL)
 }
 \arguments{
   \item{events}{ A matrix-like object containing event series
@@ -17,8 +17,11 @@
   \item{f}{ A vector of f values for each scenario spectrum.  If
     \code{NULL}, each scenario spectrum is assigned an f=0.1. }
   \item{maxLoss}{ A vector of maximum losses for each scenario
-    spectrum.  if \code{NULL}, each scenario spectrum is assigned
+    spectrum.  If \code{NULL}, each scenario spectrum is assigned
     its minimum outcome value. }
+  \item{z}{ A vector of (2) martingale exponents and (1) target
+    return value.  The first (second) exponent is used when
+    portfolio equity is below (above) the target value. }
 }
 %\details{
 %%  ~~ If necessary, more details than the description above ~~

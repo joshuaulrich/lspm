@@ -21,24 +21,27 @@
 
 #include <R.h>
 #include <Rinternals.h>
-//#include "lspm.h"
+#include "lspm.h"
 
-SEXP hpr ( SEXP lsp, SEXP port )
+SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
 {
   /* Arguments:
    *   lsp      A 'lsp' class object
    *   port     Calculate portfolio HPR?
+   *   order    Vector specifying order to evaluate events
    */
 
-  int P=0;
-  int i, j;
+  int P=0;  /* PROTECT counter */
+  int i, j, k;  /* loop counters */
   
+  /* extract lsp components */
   SEXP event = VECTOR_ELT(lsp, 0);
   SEXP prob = VECTOR_ELT(lsp, 1);
   SEXP fval = VECTOR_ELT(lsp, 2);
   SEXP maxloss = VECTOR_ELT(lsp, 3);
+  SEXP zval = VECTOR_ELT(lsp, 4);
 
-  // ensure lsp components are double
+  /* ensure lsp components are double */
   if(TYPEOF(event) != REALSXP) {
     PROTECT(event = coerceVector(event, REALSXP)); P++;
   }
@@ -51,50 +54,73 @@ SEXP hpr ( SEXP lsp, SEXP port )
   if(TYPEOF(maxloss) != REALSXP) {
     PROTECT(maxloss = coerceVector(maxloss, REALSXP)); P++;
   }
+  if(TYPEOF(zval) != REALSXP) {
+    PROTECT(zval = coerceVector(zval, REALSXP)); P++;
+  }
 
+  /* pointers to lsp components */
   double *d_event = REAL(event);
   double *d_prob = REAL(prob);
   double *d_fval = REAL(fval);
   double *d_maxloss = REAL(maxloss);
+  double *d_zval = REAL(zval);
 
-  // ensure 'port' is logical
+  /* ensure 'port' is logical */
   if(TYPEOF(port) != LGLSXP) {
     PROTECT(port = coerceVector(port, LGLSXP)); P++;
   }
   int i_port = INTEGER(port)[0];
 
-  // dimensions of events
+  /* ensure 'order' is integer */
+  if(TYPEOF(order) != INTSXP) {
+    PROTECT(order = coerceVector(order, INTSXP)); P++;
+  }
+  int *i_order = INTEGER(order);
+
+  /* dimensions of events */
   int nc = ncols(event);
   int nr = nrows(event);
+  int nro = nrows(order);
 
-  // if portfolio-level HPR is requested
-  double hpr;
-  int nc_res;
-  if( i_port ) {
-    nc_res = 1;
-  } else {
-    nc_res = nc;
-  }
+  /* if portfolio-level HPR is requested */
+  int nc_res = (i_port == 1) ? 1 : nc;
 
+  /* initialize result object and pointer */
   SEXP result;
-  PROTECT(result = allocMatrix(REALSXP, nr, nc_res)); P++;
+  PROTECT(result = allocMatrix(REALSXP, nro, nc_res)); P++;
   double *d_result = REAL(result);
 
-  if( i_port ) {
-    for(j=0; j < nr; j++) {
-      hpr = 1;
-      for(i=0; i < nc; i++) {
-        hpr += d_fval[i] * d_event[j+i*nr] / -d_maxloss[i];
+  /* general HPR incorporating z */
+  double e0 = 1, e1 = 1;  /* equity values      */
+  double zz, mul;         /* exponent, multiple */
+  double hpr, hprport;
+
+  /* loop over events in 'order' */
+  for(j=0; j < nro; j++) {
+    /* extract the event location */
+    k = i_order[j];
+    /* calculate martingale exponent */
+    zz = (e1/e0) < (1+d_zval[2]) ? d_zval[0] : d_zval[1];
+    /* calculate multiplier based on zz */
+    mul = pow(e0/e1, 1/(zz+1)-1);
+    hprport = 0;
+    /* loop over each system HPR for this period */
+    for(i=0; i < nc; i++) {
+      /* calculate HPR */
+      hpr = d_fval[i] * d_event[k+i*nr] / -d_maxloss[i] * mul;
+      /* add each system HPR to total portfolio HPR */
+      hprport += hpr;
+      if( !i_port ) {
+        /* set HPR for each system */
+        d_result[j+i*nr] = hpr + 1;
       }
-      d_result[j] = hpr < 0 ? 0 : hpr;
     }
-  } else {
-    for(j=0; j < nr; j++) {
-      for(i=0; i < nc; i++) {
-        hpr = 1 + d_fval[i] * d_event[j+i*nr] / -d_maxloss[i];
-        d_result[j+i*nr] = hpr < 0 ? 0 : hpr;
-      }
+    if( i_port ) {
+      /* set portfolio-level HPR only and ensure all HPR >= 0 */
+      d_result[j] = (1+hprport) < 0 ? 0 : (1+hprport);
     }
+    /* add ending equity to total */
+    e1 += e1 * hprport;
   }
 
   UNPROTECT(P);

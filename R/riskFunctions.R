@@ -27,20 +27,10 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
     return(out)
   }
   
-  trades <- lsp$events
-  probs <- lsp$probs
-  maxLoss <- lsp$maxLoss
-  f <- lsp$f
-  
-  # Portfolio HPR
-  hprPort <- HPR(lsp, portfolio=TRUE)
-
-  NR <- NROW(trades)
+  NR <- NROW(lsp$probs)
   nsamp <- ( (sigma/error) ^ 2 ) * 0.25
   nperm <- NR ^ horizon
   
-  failProb <- sumProb <- 0
-
   sample <- 0  # sampling off by default
   if(nperm > nsamp) {
     # this turns sampling on and tells the function to sample
@@ -54,7 +44,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   if(is.null(snow)) {
     
     # calculate all the permutations on the local machine
-    res <- .probRD(c(1,nperm), DD, horizon, hprPort, probs, ruin=TRUE, sample)
+    res <- .probRD(c(1,nperm), DD, horizon, lsp, ruin=TRUE, sample)
     failProb <- res[1]
     sumProb  <- res[2]
   } else {
@@ -71,7 +61,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
 
     # send the function to the cluster
     ca <- clusterApply(snow, ind, fun=.probRD, DD=DD, horizon=horizon,
-                       hpr=hprPort, probs=probs, ruin=TRUE, sample)
+                       lsp=lsp, ruin=TRUE, sample)
     
     # sum the fail and total probabilities from all the cores
     seqlen <- 1:length(ca)
@@ -94,19 +84,9 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
     return(out)
   }
   
-  trades <- lsp$events
-  probs <- lsp$probs
-  maxLoss <- lsp$maxLoss
-  f <- lsp$f
-  
-  # Portfolio HPR
-  hprPort <- HPR(lsp, portfolio=TRUE)
-
-  NR <- NROW(trades)
+  NR <- NROW(lsp$probs)
   nsamp <- ( (sigma/error) ^ 2 ) * 0.25
   nperm <- NR ^ horizon
-  
-  failProb <- sumProb <- 0
   
   sample <- 0  # sampling off by default
   if(nperm > nsamp) {
@@ -121,7 +101,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   if(is.null(snow)) {
     
     # calculate all the permutations on the local machine
-    res <- .probRD(c(1,nperm), DD, horizon, hprPort, probs, ruin=FALSE, sample)
+    res <- .probRD(c(1,nperm), DD, horizon, lsp, ruin=FALSE, sample)
     failProb <- res[1]
     sumProb  <- res[2]
   } else {
@@ -138,7 +118,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
 
     # send the function to the cluster
     ca <- clusterApply(snow, ind, fun=.probRD, DD=DD, horizon=horizon,
-                       hpr=hprPort, probs=probs, ruin=FALSE, sample)
+                       lsp=lsp, ruin=FALSE, sample)
     
     # sum the fail and total probabilities from all the cores
     seqlen <- 1:length(ca)
@@ -152,11 +132,11 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   return(out)
 }
 
-.probRD <- function(range, DD, horizon, hpr, probs, ruin, sample) {
+.probRD <- function(range, DD, horizon, lsp, ruin, sample) {
   # This is a simple function that can be sent to the cluster
   beg <- range[1]
   end <- range[2]
-  res <- .Call('probRD', beg, end, DD, horizon, hpr, probs,
+  res <- .Call('probRD', beg, end, DD, horizon, lsp,
                          ruin, sample, PACKAGE="LSPM")
   return(res)
 }

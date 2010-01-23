@@ -17,7 +17,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-lsp <- function(events, probs=NULL, f=NULL, maxLoss=NULL) {
+lsp <- function(events, probs=NULL, f=NULL, maxLoss=NULL, z=NULL) {
 
   events <- as.matrix(events)
   
@@ -44,11 +44,15 @@ lsp <- function(events, probs=NULL, f=NULL, maxLoss=NULL) {
   if(any(maxLoss >= 0)) {
     stop("all 'events' columns must have at least one negative trade")
   }
+  if(is.null(z)) {
+    z <- rep(0L,3)
+  }
 
   x <- structure( list(events = as.matrix(events),
                        probs = as.matrix(probs),
                        f = as.matrix(f),
-                       maxLoss = as.matrix(maxLoss)), class="lsp" )
+                       maxLoss = as.matrix(maxLoss),
+                       z = as.matrix(z)), class="lsp" )
   return(x)
 }
 
