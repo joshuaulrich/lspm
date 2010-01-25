@@ -44,7 +44,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   if(is.null(snow)) {
     
     # calculate all the permutations on the local machine
-    res <- .probRD(c(1,nperm), DD, horizon, lsp, ruin=TRUE, sample)
+    res <- .probRD(c(1,nperm), DD, lsp, horizon, sample, ruin=TRUE)
     failProb <- res[1]
     sumProb  <- res[2]
   } else {
@@ -60,8 +60,8 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
     for(i in 1:ncores) ind <- c(ind, list(ij[(i-1)*2+(1:2)]))
 
     # send the function to the cluster
-    ca <- clusterApply(snow, ind, fun=.probRD, DD=DD, horizon=horizon,
-                       lsp=lsp, ruin=TRUE, sample)
+    ca <- clusterApply(snow, ind, fun=.probRD, DD=DD, lsp=lsp,
+                       horizon=horizon, sample, ruin=TRUE)
     
     # sum the fail and total probabilities from all the cores
     seqlen <- 1:length(ca)
@@ -101,7 +101,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   if(is.null(snow)) {
     
     # calculate all the permutations on the local machine
-    res <- .probRD(c(1,nperm), DD, horizon, lsp, ruin=FALSE, sample)
+    res <- .probRD(c(1,nperm), DD, lsp, horizon, sample, ruin=FALSE)
     failProb <- res[1]
     sumProb  <- res[2]
   } else {
@@ -117,8 +117,8 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
     for(i in 1:ncores) ind <- c(ind, list(ij[(i-1)*2+(1:2)]))
 
     # send the function to the cluster
-    ca <- clusterApply(snow, ind, fun=.probRD, DD=DD, horizon=horizon,
-                       lsp=lsp, ruin=FALSE, sample)
+    ca <- clusterApply(snow, ind, fun=.probRD, DD=DD, lsp=lsp,
+                       horizon=horizon, sample, ruin=FALSE)
     
     # sum the fail and total probabilities from all the cores
     seqlen <- 1:length(ca)
@@ -132,12 +132,12 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   return(out)
 }
 
-.probRD <- function(range, DD, horizon, lsp, ruin, sample) {
+.probRD <- function(range, DD, lsp, horizon, sample, ruin) {
   # This is a simple function that can be sent to the cluster
   beg <- range[1]
   end <- range[2]
-  res <- .Call('probRD', beg, end, DD, horizon, lsp,
-                         ruin, sample, PACKAGE="LSPM")
+  res <- .Call('probRD', beg, end, DD, lsp, horizon,
+                         sample, ruin, PACKAGE="LSPM")
   return(res)
 }
   

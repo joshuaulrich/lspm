@@ -23,18 +23,16 @@
 #include <Rinternals.h>
 #include "lspm.h"
 
-SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
-        SEXP horizon, SEXP sample, SEXP ruin )
+SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
+        SEXP horizon, SEXP sample )
 {
   /* Arguments:
    *   beg      First permutation index value
    *   end      Last permutation index value
-   *   DD       If ruin=TRUE:   % where ruin occurs
-   *            If ruin=FALSE:  maximum drawdown
-   *   horizon  Horizon over which to determine risk
+   *   val      Profit target (percent)
+   *   horizon  Horizon over which to determine probability
    *   hpr      Holding period returns
    *   prob     Probability of each HPR
-   *   ruin     ruin/drawdown boolean
    *   sample   If sample=0, run all permutations
    *            else run 'end - beg' random permutations
    *   replace  boolean (not implemented, always replace)
@@ -88,19 +86,13 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   if(TYPEOF(horizon) != INTSXP) {
     PROTECT(horizon = coerceVector(horizon, INTSXP)); P++;
   }
-  /* ensure 'ruin' is logical */
-  if(TYPEOF(ruin) != LGLSXP) {
-    PROTECT(ruin = coerceVector(ruin, LGLSXP)); P++;
-  }
-  
+
   /* Get values from pointers */
   double i_beg = REAL(beg)[0]-1;  /* Convert from one- to zero-based index */
   double i_end = REAL(end)[0]-1;  /* Convert from one- to zero-based index */
   double i_sample = REAL(sample)[0];
-  double d_dd = REAL(DD)[0];
   int i_horizon = INTEGER(horizon)[0];
-  int i_ruin = INTEGER(ruin)[0];
- 
+
   /* initialize result object and pointer */
   SEXP result;
   PROTECT(result = allocVector(REALSXP, 2)); P++;
@@ -112,7 +104,7 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
 
   double I; int J;
   double nr = nrows(prob);
-  double failProb = 0;
+  double passProb = 0;
   double sumProb = 0;
   double *d_phpr = NULL;
 
@@ -146,7 +138,6 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
     double probPerm = 1;  /* proability of this permutation */
     double t0hpr = 1;     /* this period's (t = 0) HPR */
     double t1hpr = 1;     /* last period's (t = 1) HPR */
-    int fail = 0;         /* fail=1 if ruin or max drawdown is hit */
     
     /* if sampling, get a random permutation between 0 and nPr-1,
      * else use the current index value. */
@@ -170,21 +161,13 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
        * 'nr' elements */
       J = using_z ? j : i_perm[j];
       t1hpr *= d_phpr[J];  /* New portfolio balance */
-      /* if ruin % or max drawdown is hit */
-      if( t1hpr <= (1-d_dd) ) {
-        fail = 1;
-      }
-      /* If calculating risk drawdown and last period was a new high */
-      if( !i_ruin && t1hpr > 1 ) {
-        t1hpr = 1;
-      }
       /* Keep track of this permutation's probability */
       probPerm *= d_prob[J];
     }
-    /* If this permutation hit ruin/drawdown limit,
+    /* If this permutation hit its target return,
      * add its probability to the total. */
-    if( fail ) {
-      failProb += probPerm;
+    if( t1hpr >= (1+d_zval[2]) ) {
+      passProb += probPerm;
     }
     /* Total probability of all permutations */
     sumProb += probPerm;
@@ -192,7 +175,7 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   PutRNGstate();  /* Write out .Random.seed */
 
   /* Store results */
-  d_result[0] = failProb;
+  d_result[0] = passProb;
   d_result[1] = sumProb;
   
   UNPROTECT(P);

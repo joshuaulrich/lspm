@@ -6,9 +6,11 @@ export(HPR)
 export(lsp)
 
 export(optimalf)
+export(maxProbProfit)
 
 export(probDrawdown)
 export(probRuin)
+export(probProfit)
 export(deoptim)
 
 S3method(print,lsp)

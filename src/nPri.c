@@ -32,73 +32,73 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
   SEXP result;
   int *int_result=NULL;
 
-  // ensure 'n' is integer
+  /* ensure 'n' is integer */
   if(TYPEOF(n) != INTSXP) {
     PROTECT(n = coerceVector(n, INTSXP)); P++;
   }
-  // ensure 'r' is integer
+  /* ensure 'r' is integer */
   if(TYPEOF(r) != INTSXP) {
     PROTECT(r = coerceVector(r, INTSXP)); P++;
   }
-  // ensure 'i' is real
+  /* ensure 'i' is real */
   if(TYPEOF(i) != REALSXP) {
     PROTECT(i = coerceVector(i, REALSXP)); P++;
   }
-  // ensure 'replace' is logical
+  /* ensure 'replace' is logical */
   if(TYPEOF(replace) != LGLSXP) {
     PROTECT(replace = coerceVector(replace, LGLSXP)); P++;
   }
 
-  // get the first element (everything from R is a vector)
+  /* get the first element (everything from R is a vector) */
   int_n = INTEGER(n)[0];
   int_r = INTEGER(r)[0];
   real_i = REAL(i)[0];
   int_replace = INTEGER(replace)[0];
 
   if ( int_replace ) {
-    // Permutations WITH replacement
+    /* Permutations WITH replacement */
     PROTECT(result = allocVector(INTSXP, int_r)); P++;
     int_result = INTEGER(result);
 
     for (j=0; j < int_r; ++j) {
-      //int_result[int_r-j-1] = ( (long)(int_i/pow(int_n,j)) % int_n );
+      /*int_result[int_r-j-1] = ( (long)(int_i/pow(int_n,j)) % int_n ); */
       int_result[int_r-j-1] = (long)fmod(real_i/pow(int_n,j), int_n );
     }
   } else {
-    // Permutations WITHOUT replacement
+    /* Permutations WITHOUT replacement */
     PROTECT(result = allocVector(INTSXP, int_n)); P++;
     int_result = INTEGER(result);
 
-    // Adjust i for r < (n-1)
-    //   If r < (n-1) then we want the first r elements of the i*(n-r)!
-    //   permutation (by Joshua Ulrich, not part of the MSDN algorithm).
+    /* Adjust i for r < (n-1)
+     *   If r < (n-1) then we want the first r elements of the i*(n-r)!
+     *   permutation (by Joshua Ulrich, not part of the MSDN algorithm). */
     if ( int_r < (int_n-1) ) {
-      // Compute factorial multiplier
+      /* Compute factorial multiplier */
       int fmult = 1;
       for (j = 1; j <= (int_n-int_r); ++j) {
         fmult = fmult * j;
       }
-      // Apply factorial multiplier
+      /* Apply factorial multiplier */
       real_i = real_i * fmult;
     }
     
-    // Algorithm taken from:
-    // http://msdn.microsoft.com/en-us/library/aa302371.aspx
+    /* Algorithm taken from: */
+    /* http://msdn.microsoft.com/en-us/library/aa302371.aspx */
     
-    // Step #1 - Find factoradic of i
+    /* Step #1 - Find factoradic of i */
     int factoradic[int_n];
     for (j = 1; j <= int_n; ++j) {
-      //factoradic[int_n-j] = int_i % j;
+      /*factoradic[int_n-j] = int_i % j; */
       factoradic[int_n-j] = (long)fmod(real_i, j);
       real_i /= j;
     }
-    // Step #2 - Convert factoradic to permuatation
+    /* Step #2 - Convert factoradic to permuatation */
     for (j = 0; j < int_n; ++j) {
       ++factoradic[j];
     }
-    // Set right-most element to 1.
+    /* Set right-most element to 1. */
     int_result[int_n-1] = 1;  
-    // Note what's going on here...
+    /* Note what's going on here... */
     for (j = int_n-2; j >= 0; --j) {
       int_result[j] = factoradic[j];
       for (k = j+1; k < int_n; ++k) {
@@ -106,7 +106,7 @@ SEXP nPri ( SEXP n, SEXP r, SEXP i, SEXP replace )
           ++int_result[k];
       }
     }
-    // Put in zero-based form
+    /* Put in zero-based form */
     for (j = 0; j < int_n; ++j) {
       --int_result[j];
     }
