@@ -17,12 +17,19 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-maxProbProfit <- function(lsp, target, horizon,
-  constrFun=NULL, constrVal=NULL, ...) {
+maxProbProfit <- function(lsp, target, horizon, constrFun=NULL, constrVal=NULL,
+  zmin=-1, ...) {
 
   # Author: Joshua Ulrich
 
   lsp$z[3] <- target
+
+  if(length(zmin)==1) {
+    zmin <- rep(zmin,2)
+  } else {
+    zmin <- zmin[1:2]
+  }
+  if(max(zmin)>0 | min(zmin) < -1) stop("zmin must be -1 <= zmin <= 0")
   
   fun <- function(fz, lsp, horizon, constrFun, constrVal, ...) {
     
@@ -31,18 +38,33 @@ maxProbProfit <- function(lsp, target, horizon,
     lsp$z[1:2] <- fz[(ns+1):(ns+2)]
 
     if(!is.null(constrFun)) {
-      cons <- do.call(constrFun, list(lsp, ...))
+      # This is in case the constraint function has a 'horizon' arg.
+      # Since 'horizon' is a formal arg of maxProbProfit, it matches
+      # and is no longer in '...' for use by constrFun
+      cDots <- list(...)
+      cFnNames <- names(formals(constrFun))
+      cDots <- cDots[names(cDots) %in% cFnNames]
+      if("horizon" %in% cFnNames) {
+        cDots$horizon <- horizon
+      }
+      cons <- do.call(constrFun, c(list(lsp), cDots))
         
       if(cons >= constrVal) {
         return(Inf)
       }
     }
-    P <- probProfit(lsp, lsp$z[3], horizon, ...)
+    # This allows args like 'error', 'sigma', and 'snow' to be
+    # passed to probProfit, while removing any args that don't
+    # belong to probProfit.
+    pFnNames <- names(formals(probProfit))
+    pDots <- list(...)
+    pDots <- pDots[names(pDots) %in% pFnNames]
+    P <- do.call(probProfit, c(list(lsp, lsp$z[3], horizon), pDots))
     return(-P)
   }
 
-  l <- c(rep(0,NCOL(lsp$events)),-1,-1)
-  u <- c(rep(1,NCOL(lsp$events)), 0, 0)
+  l <- c(rep(0,NCOL(lsp$events)),zmin[1],zmin[2])
+  u <- c(rep(1,NCOL(lsp$events)),0,0)
   de <- deoptim(fun, lower=l, upper=u, lsp=lsp, horizon=horizon,
                 constrFun=constrFun, constrVal=constrVal, ...)
 
