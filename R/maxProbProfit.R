@@ -72,5 +72,6 @@ maxProbProfit <- function(lsp, target, horizon, constrFun=NULL, constrVal=NULL,
   res <- list(f=de$optim$bestmem[1:(ns-2)], z=de$optim$bestmem[(ns-1):ns],
               profitProb=-de$optim$bestval)
   names(res$f) <- colnames(lsp$events)
+  names(res$z) <- c("zminus","zplus")
   return(res)
 }
