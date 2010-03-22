@@ -143,18 +143,18 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   
 RD.asymptote <- function(RD, horizon, ruin=FALSE) {
 
-  objFun <- function(params, RD, horizon, ruin) {
+  objFun <- function(params, RD, horizons, ruin) {
     if(!ruin) {
       params[1] <- 1
     }
-    res <- params[1] - params[2] * exp( -params[3] * horizon )
+    res <- params[1] - params[2] * exp( -params[3] * horizons )
     res <- sum( (RD - res)^2 )
     return(res)
   }
 
   de <- deoptim(objFun, lower=c(0,0,0), upper=c(1,1,1),
-    control=list(VTR=1e-6, refresh=-1, NP=30),
-    RD=RD, horizon=1:NROW(RD), ruin=ruin)
+    control=list(VTR=1e-6, refresh=-1, NP=50),
+    RD=RD, horizons=1:NROW(RD), ruin=ruin)
 
   de.coef <- de$optim$bestmem
   if(!ruin) {
