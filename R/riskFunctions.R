@@ -143,24 +143,38 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
   
 RD.asymptote <- function(RD, horizon, ruin=FALSE) {
 
-  objFun <- function(params, RD, horizons, ruin) {
-    if(!ruin) {
-      params[1] <- 1
+  if(ruin) {
+    lower <- c(0,0,0)
+    upper <- c(1,1,1)
+    NP <- 30
+    objFun <- function(params, RD, horizons) {
+      res <- params[1] - params[2] * exp( -params[3] * horizons )
+      res <- sum( (RD - res)^2 )
+      return(res)
     }
-    res <- params[1] - params[2] * exp( -params[3] * horizons )
-    res <- sum( (RD - res)^2 )
-    return(res)
+  } else {
+    lower <- c(0,0)
+    upper <- c(1,1)
+    NP <- 20
+    objFun <- function(params, RD, horizons) {
+      res <- 1 - params[1] * exp( -params[2] * horizons )
+      res <- sum( (RD - res)^2 )
+      return(res)
+    }
   }
 
-  de <- deoptim(objFun, lower=c(0,0,0), upper=c(1,1,1),
-    control=list(VTR=1e-6, refresh=-1, NP=50),
-    RD=RD, horizons=1:NROW(RD), ruin=ruin)
+  de <- deoptim(objFun, lower=lower, upper=upper,
+    control=list(NP=NP, refresh=-1, strategy=3, noimprove=30),
+    RD=RD, horizons=1:NROW(RD))
 
   de.coef <- de$optim$bestmem
-  if(!ruin) {
-    de.coef[1] <- 1
+
+  if(ruin) {
+    out <- de.coef[1] - de.coef[2] * exp( -de.coef[3] * horizon )
+  } else {
+    out <- 1 - de.coef[1] * exp( -de.coef[2] * horizon )
   }
-  out <- de.coef[1] - de.coef[2] * exp( -de.coef[3] * horizon )
+
   names(out) <- NULL
   return(out)
 }

@@ -21,6 +21,7 @@
 
 #include <R.h>
 #include <Rinternals.h>
+#include <R_ext/Utils.h>
 #include "lspm.h"
 
 SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
@@ -142,6 +143,9 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
 
   /* Loop over each permutation index */
   for(i=i_beg; i<=i_end; i++) {
+
+    /* check for user-requested interrupt */
+    R_CheckUserInterrupt();
 
     double probPerm = 1;  /* proability of this permutation */
     double t0hpr = 1;     /* this period's (t = 0) HPR */

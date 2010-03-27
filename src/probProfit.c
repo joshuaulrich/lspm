@@ -135,6 +135,9 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
   /* Loop over each permutation index */
   for(i=i_beg; i<=i_end; i++) {
 
+    /* check for user-requested interrupt */
+    R_CheckUserInterrupt();
+
     double probPerm = 1;  /* proability of this permutation */
     double t0hpr = 1;     /* this period's (t = 0) HPR */
     double t1hpr = 1;     /* last period's (t = 1) HPR */
