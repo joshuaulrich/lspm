@@ -37,11 +37,33 @@
 %\seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %}
-%\examples{
-%##---- Should be DIRECTLY executable !! ----
-%##-- ==>  Define data, use random,
-%##--	or do  help(data=index)  for the standard data sets.
-%}
+\examples{
+  data(port)
+  
+  # DEoptim parameters (see ?deoptim)
+  DEctrl <- list(NP=30, itermax=100)
+
+  # Unconstrainted Optimal f
+  res <- optimalf(port, control=DEctrl)
+
+ \dontrun{
+  # Ruin-constrained Optimal f
+  resRuin <- optimalf(port, probRuin, 0.1, DD=0.2,
+    horizon=4, control=DEctrl)
+
+  # Drawdown-constrained Optimal f
+  resDrawdown <- optimalf(port, probDrawdown, 0.1, DD=0.2,
+    horizon=4, control=DEctrl)
+
+  # Create snow socket cluster for two cores
+  library(snow)
+  clust <- makeSOCKcluster(2)
+
+  # Drawdown-constrained Optimal f using two cores
+  resSnow <- optimalf(port, probDrawdown, 0.1, DD=0.2,
+    horizon=4, snow=clust, control=DEctrl)
+ }
+}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ ts }

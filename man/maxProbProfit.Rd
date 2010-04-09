@@ -46,11 +46,30 @@
 %\seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %}
-%\examples{
-%##---- Should be DIRECTLY executable !! ----
-%##-- ==>  Define data, use random,
-%##--	or do  help(data=index)  for the standard data sets.
-%}
+\examples{
+ \dontrun{
+  data(port)
+  
+  # Initial population
+  ipop <- cbind(runif(30,0,0.01),runif(30,0,0.01),runif(30,0,0.01),
+    runif(30,-1,-0.8),runif(30,-1,-0.8))
+  
+  # DEoptim parameters (see ?deoptim)
+  DEctrl <- list(itermax=11, refresh=1, digits=6, initial=ipop)
+  
+  # Drawdown-constrained maximum probability of profit
+  res <- maxProbProfit(port, 1e-6, 4, probDrawdown, 0.1,
+    DD=0.2, calc.max=4, control=DEctrl)
+
+  # Create snow socket cluster for two cores
+  library(snow)
+  clust <- makeSOCKcluster(2)
+
+  # Drawdown-constrained maximum probability of profit using two cores
+  res <- maxProbProfit(port, 1e-6, 12, probDrawdown, 0.1,
+    DD=0.2, calc.max=4, snow=clust, control=DEctrl)
+ }
+}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ ts }
