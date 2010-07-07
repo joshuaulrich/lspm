@@ -7,7 +7,7 @@
 }
 \usage{
   maxProbProfit(lsp, target, horizon, constrFun=NULL, constrVal=NULL,
-    zmin=-1, ...)
+    zmin=-1, margin=NULL, equity=NULL, upper, lower, ...)
 }
 \arguments{
   \item{lsp}{ A \code{lsp} object. }
@@ -20,6 +20,10 @@
     martingale exponents.  If \code{zmin} is a vector, the first
     (second) element is used when portfolio equity is below (above)
     \code{target}. \code{zmin} must be <= -1 and >= 0. }
+  \item{margin}{ A vector of inital margin values for each event series. }
+  \item{equity}{ Current account equity. }
+  \item{upper}{ Upper f-value bounds (recycled, if necessary). }
+  \item{lower}{ Lower f-value bounds (recycled, if necessary). } 
   \item{\dots}{ Parameters to be passed to \code{constrFun}. }
 }
 %\details{
@@ -50,6 +54,16 @@
  \dontrun{
   data(port)
   
+  # DEoptim parameters (see ?deoptim)
+  DEctrl <- list(itermax=11, refresh=1, digits=6)
+  
+  # Unconstrained maximum probability of profit
+  res <- maxProbProfit(port, 1e-6, 4, control=DEctrl)
+
+  # Margin-constrained maximum probability of profit
+  res <- maxProbProfit(port, 1e-6, 4, control=DEctrl,
+    margin=-port$maxLoss*5, equity=1e6)
+
   # Initial population
   ipop <- cbind(runif(30,0,0.01),runif(30,0,0.01),runif(30,0,0.01),
     runif(30,-1,-0.8),runif(30,-1,-0.8))

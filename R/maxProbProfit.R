@@ -18,24 +18,43 @@
 #
 
 maxProbProfit <- function(lsp, target, horizon, constrFun=NULL, constrVal=NULL,
-  zmin=-1, ...) {
+  zmin=-1, margin=NULL, equity=NULL, upper, lower, ...) {
 
   # Author: Joshua Ulrich
 
   lsp$z[3] <- target
 
+  # Check exponent arguments
   if(length(zmin)==1) {
     zmin <- rep(zmin,2)
   } else {
     zmin <- zmin[1:2]
   }
   if(max(zmin)>0 | min(zmin) < -1) stop("zmin must be -1 <= zmin <= 0")
-  
-  fun <- function(fz, lsp, horizon, constrFun, constrVal, ...) {
+
+  # Check margin constraint arguments
+  if(!is.null(margin) && !is.null(equity)) {
+    if(NROW(margin) != NCOL(lsp$events)) {
+      stop(paste("'margin' must have length =",NCOL(lsp$events)))
+    }
+  } else
+  if(!is.null(margin) &&  is.null(equity) ||
+      is.null(margin) && !is.null(equity)) {
+    stop("both 'equity' and 'margin' must be provided")
+  }
+
+  fun <- function(fz, lsp, horizon, constrFun, constrVal,
+    margin, equity, ...) {
     
     ns <- NROW(lsp$f)
     lsp$f <- fz[1:ns]
     lsp$z[1:2] <- fz[(ns+1):(ns+2)]
+
+    # Margin constraint(s)
+    if(!(is.null(margin) & is.null(equity))) {
+      maxU <- sum( equity * lsp$f * margin / -lsp$maxLoss )
+      if(maxU > equity) return(Inf) 
+    }
 
     if(!is.null(constrFun)) {
       # This is in case the constraint function has a 'horizon' arg.
@@ -63,10 +82,22 @@ maxProbProfit <- function(lsp, target, horizon, constrFun=NULL, constrVal=NULL,
     return(-P)
   }
 
-  l <- c(rep(0,NCOL(lsp$events)),zmin[1],zmin[2])
-  u <- c(rep(1,NCOL(lsp$events)),0,0)
+  # Allow user-specified bounds
+  nc <- NCOL(lsp$events)
+  l <- rep(0,nc)
+  if(!missing(lower)) {
+    l[1:nc] <- lower
+  }
+  l <- c(l,zmin[1],zmin[2])
+  u <- rep(1,nc)
+  if(!missing(upper)) {
+    u[1:nc] <- upper
+  }
+  u <- c(u,0,0)
+
   de <- deoptim(fun, lower=l, upper=u, lsp=lsp, horizon=horizon,
-                constrFun=constrFun, constrVal=constrVal, ...)
+                constrFun=constrFun, constrVal=constrVal,
+                margin=margin, equity=equity, ...)
 
   ns <- NROW(de$optim$bestmem)
   res <- list(f=de$optim$bestmem[1:(ns-2)], z=de$optim$bestmem[(ns-1):ns],

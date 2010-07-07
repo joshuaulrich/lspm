@@ -6,13 +6,18 @@
   Find optimal f for a set of trades
 }
 \usage{
-  optimalf(lsp, constrFun=NULL, constrVal=NULL, ...)
+  optimalf(lsp, constrFun=NULL, constrVal=NULL,
+    margin=NULL, equity=NULL, upper, lower, ...)
 }
 \arguments{
   \item{lsp}{ A \code{lsp} object. }
   \item{constrFun}{ A string naming the constraint function. }
   \item{constrVal}{ The value of the constraint function that should
     not be exceeded. }
+  \item{margin}{ A vector of inital margin values for each event series. }
+  \item{equity}{ Current account equity. }
+  \item{upper}{ Upper f-value bounds (recycled, if necessary). }
+  \item{lower}{ Lower f-value bounds (recycled, if necessary). }
   \item{\dots}{ Parameters to be passed to \code{constrFun}. }
 }
 %\details{
@@ -45,6 +50,10 @@
 
   # Unconstrainted Optimal f
   res <- optimalf(port, control=DEctrl)
+
+  # Margin-constrainted Optimal f
+  resMargin <- optimalf(port, control=DEctrl,
+    equity=1e5, margin=-port$maxLoss*2)
 
  \dontrun{
   # Ruin-constrained Optimal f
