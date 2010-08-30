@@ -1,12 +1,12 @@
 Package: LSPM
 Type: Package
 Title: The Leverage Space Portfolio Modeler
-Version: 0.1-1
+Version: 0.1-2
 Date: 2010-07-07
 Author: Soren Macbeth <soren@dopeness.org>, Joshua Ulrich <josh.m.ulrich@gmail.com>, and Ralph Vince <rvince@parametricplanet.com>
 Maintainer: Soren Macbeth <soren@dopeness.org>, Joshua Ulrich <josh.m.ulrich@gmail.com>
 Description: The Leverage Space Portfolio Modeler
-Depends: R (>= 2.8.0)
+Depends: R (>= 2.8.0), DEoptim
 Suggests: snow
 License: GPL-3
 LazyLoad: yes

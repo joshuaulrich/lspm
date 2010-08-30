@@ -20,7 +20,7 @@
   }
 }
 \author{
-  Soren MacBeth, Joshua Ulrich, and Ralph Vince
+  Soren Macbeth, Joshua Ulrich, and Ralph Vince
 
   Maintainer: Joshua Ulrich <josh.m.ulrich@gmail.com>
 }

@@ -1,7 +1,7 @@
 #
 #   LSPM: The Leverage Space Portfolio Modeler
 #
-#   Copyright (C) 2009-2010  Soren MacBeth, Joshua Ulrich, and Ralph Vince
+#   Copyright (C) 2009-2010  Soren Macbeth, Joshua Ulrich, and Ralph Vince
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ optimalf <- function(lsp, constrFun=NULL, constrVal=NULL,
     u[1:nc] <- upper
   }
 
-  de <- deoptim(fun, lower=l, upper=u, lsp=lsp,
+  de <- DEoptim(fun, lower=l, upper=u, lsp=lsp,
                 constrFun=constrFun, constrVal=constrVal,
                 margin=margin, equity=equity, ...)
 
