@@ -35,51 +35,18 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
   int i, j, k;  /* loop counters */
   
   /* extract lsp components */
-  SEXP event = VECTOR_ELT(lsp, 0);
-  SEXP prob = VECTOR_ELT(lsp, 1);
-  SEXP fval = VECTOR_ELT(lsp, 2);
-  SEXP maxloss = VECTOR_ELT(lsp, 3);
-  SEXP zval = VECTOR_ELT(lsp, 4);
-
-  /* ensure lsp components are double */
-  if(TYPEOF(event) != REALSXP) {
-    PROTECT(event = coerceVector(event, REALSXP)); P++;
-  }
-  if(TYPEOF(prob) != REALSXP) {
-    PROTECT(prob = coerceVector(prob, REALSXP)); P++;
-  }
-  if(TYPEOF(fval) != REALSXP) {
-    PROTECT(fval = coerceVector(fval, REALSXP)); P++;
-  }
-  if(TYPEOF(maxloss) != REALSXP) {
-    PROTECT(maxloss = coerceVector(maxloss, REALSXP)); P++;
-  }
-  if(TYPEOF(zval) != REALSXP) {
-    PROTECT(zval = coerceVector(zval, REALSXP)); P++;
-  }
-
-  /* pointers to lsp components */
-  double *d_event = REAL(event);
-  double *d_prob = REAL(prob);
-  double *d_fval = REAL(fval);
-  double *d_maxloss = REAL(maxloss);
-  double *d_zval = REAL(zval);
-
-  /* ensure 'port' is logical */
-  if(TYPEOF(port) != LGLSXP) {
-    PROTECT(port = coerceVector(port, LGLSXP)); P++;
-  }
-  int i_port = INTEGER(port)[0];
-
-  /* ensure 'order' is integer */
-  if(TYPEOF(order) != INTSXP) {
-    PROTECT(order = coerceVector(order, INTSXP)); P++;
-  }
-  int *i_order = INTEGER(order);
+  double *d_event   = REAL(coerceVector(VECTOR_ELT(lsp, 0),REALSXP));
+  double *d_prob    = REAL(coerceVector(VECTOR_ELT(lsp, 1),REALSXP));
+  double *d_fval    = REAL(coerceVector(VECTOR_ELT(lsp, 2),REALSXP));
+  double *d_maxloss = REAL(coerceVector(VECTOR_ELT(lsp, 3),REALSXP));
+  double *d_zval    = REAL(coerceVector(VECTOR_ELT(lsp, 4),REALSXP));
+  
+  int i_port   = INTEGER(coerceVector(port, LGLSXP))[0];
+  int *i_order = INTEGER(coerceVector(order, INTSXP));
 
   /* dimensions of events */
-  int nc = ncols(event);
-  int nr = nrows(event);
+  int nc = ncols(VECTOR_ELT(lsp, 0));
+  int nr = nrows(VECTOR_ELT(lsp, 0));
   int nro = nrows(order);
 
   /* if portfolio-level HPR is requested */
@@ -97,7 +64,7 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
 
   /* loop over events in 'order' */
   for(j=0; j < nro; j++) {
-    if(e1<=0) {
+    if(e1<=0) {  /* zero-fill hpr if equity < 0 */
       d_result[j] = 0;
       continue;
     }

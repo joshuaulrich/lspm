@@ -42,56 +42,17 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
   int i, j;  /* loop counters */
 
   /* extract lsp components */
-  SEXP event = VECTOR_ELT(lsp, 0);
-  SEXP prob = VECTOR_ELT(lsp, 1);
-  SEXP fval = VECTOR_ELT(lsp, 2);
-  SEXP maxloss = VECTOR_ELT(lsp, 3);
-  SEXP zval = VECTOR_ELT(lsp, 4);
-
-  /* ensure lsp components are double */
-  if(TYPEOF(event) != REALSXP) {
-    PROTECT(event = coerceVector(event, REALSXP)); P++;
-  }
-  if(TYPEOF(prob) != REALSXP) {
-    PROTECT(prob = coerceVector(prob, REALSXP)); P++;
-  }
-  if(TYPEOF(fval) != REALSXP) {
-    PROTECT(fval = coerceVector(fval, REALSXP)); P++;
-  }
-  if(TYPEOF(maxloss) != REALSXP) {
-    PROTECT(maxloss = coerceVector(maxloss, REALSXP)); P++;
-  }
-  if(TYPEOF(zval) != REALSXP) {
-    PROTECT(zval = coerceVector(zval, REALSXP)); P++;
-  }
-
-  /* pointers to lsp components */
-  double *d_event = REAL(event);
-  double *d_prob = REAL(prob);
-  double *d_fval = REAL(fval);
-  double *d_maxloss = REAL(maxloss);
-  double *d_zval = REAL(zval);
-
-  /* To allow for larger nPr, ensure 'beg', 'end', and 'sample' are double */
-  if(TYPEOF(beg) != REALSXP) {
-    PROTECT(beg = coerceVector(beg, REALSXP)); P++;
-  }
-  if(TYPEOF(end) != REALSXP) {
-    PROTECT(end = coerceVector(end, REALSXP)); P++;
-  }
-  if(TYPEOF(sample) != REALSXP) {
-    PROTECT(sample = coerceVector(sample, REALSXP)); P++;
-  }
-  /* ensure 'horizon' is integer */
-  if(TYPEOF(horizon) != INTSXP) {
-    PROTECT(horizon = coerceVector(horizon, INTSXP)); P++;
-  }
+  double *d_event = REAL(coerceVector(VECTOR_ELT(lsp, 0),REALSXP));
+  double *d_prob = REAL(coerceVector(VECTOR_ELT(lsp, 1),REALSXP));
+  double *d_fval = REAL(coerceVector(VECTOR_ELT(lsp, 2),REALSXP));
+  double *d_maxloss = REAL(coerceVector(VECTOR_ELT(lsp, 3),REALSXP));
+  double *d_zval = REAL(coerceVector(VECTOR_ELT(lsp, 4),REALSXP));
 
   /* Get values from pointers */
-  double i_beg = REAL(beg)[0]-1;  /* Convert from one- to zero-based index */
-  double i_end = REAL(end)[0]-1;  /* Convert from one- to zero-based index */
-  double i_sample = REAL(sample)[0];
-  int i_horizon = INTEGER(horizon)[0];
+  double i_beg = REAL(coerceVector(beg, REALSXP))[0]-1;  /* zero-based */
+  double i_end = REAL(coerceVector(end, REALSXP))[0]-1;  /* zero-based */
+  double i_sample = REAL(coerceVector(sample, REALSXP))[0];
+  int i_horizon = INTEGER(coerceVector(horizon, INTSXP))[0];
 
   /* initialize result object and pointer */
   SEXP result;
@@ -102,7 +63,7 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
   SEXP phpr;
 
   double I; int J;
-  double nr = nrows(prob);
+  double nr = nrows(VECTOR_ELT(lsp, 1));
   double passProb = 0;
   double sumProb = 0;
   double *d_phpr = NULL;
@@ -134,15 +95,19 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
   /* Initialize R's random number generator (read in .Random.seed) */
   GetRNGstate();
 
+  double probPerm;  /* proability of this permutation */
+  double t0hpr;     /* this period's (t = 0) HPR */
+  double t1hpr;     /* last period's (t = 1) HPR */
+    
   /* Loop over each permutation index */
   for(i=i_beg; i<=i_end; i++) {
 
     /* check for user-requested interrupt */
-    R_CheckUserInterrupt();
+    if( i % 10000 == 999 ) R_CheckUserInterrupt();
 
-    double probPerm = 1;  /* proability of this permutation */
-    double t0hpr = 1;     /* this period's (t = 0) HPR */
-    double t1hpr = 1;     /* last period's (t = 1) HPR */
+    probPerm = 1;  /* proability of this permutation */
+    t0hpr = 1;     /* this period's (t = 0) HPR */
+    t1hpr = 1;     /* last period's (t = 1) HPR */
     
     /* if sampling, get a random permutation between 0 and nPr-1,
      * else use the current index value. */
@@ -169,7 +134,7 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
       /* Keep track of this permutation's probability */
       probPerm *= d_prob[i_perm[j]];
     }
-    if(using_z) UNPROTECT(1);  /* UNPROTECT phpr */
+    if( using_z ) UNPROTECT(1);  /* UNPROTECT phpr */
     /* If this permutation hit its target return,
      * add its probability to the total. */
     if( t1hpr >= (1+d_zval[2]) ) {
