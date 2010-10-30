@@ -97,6 +97,10 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
 
   /* loop over events in 'order' */
   for(j=0; j < nro; j++) {
+    if(e1<=0) {
+      d_result[j] = 0;
+      continue;
+    }
     /* extract the event location */
     k = i_order[j];
     /* calculate martingale exponent */

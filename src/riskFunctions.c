@@ -93,7 +93,7 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   if(TYPEOF(ruin) != LGLSXP) {
     PROTECT(ruin = coerceVector(ruin, LGLSXP)); P++;
   }
-  
+
   /* Get values from pointers */
   double i_beg = REAL(beg)[0]-1;  /* Convert from one- to zero-based index */
   double i_end = REAL(end)[0]-1;  /* Convert from one- to zero-based index */
@@ -101,7 +101,7 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   double d_dd = REAL(DD)[0];
   int i_horizon = INTEGER(horizon)[0];
   int i_ruin = INTEGER(ruin)[0];
- 
+
   /* initialize result object and pointer */
   SEXP result;
   PROTECT(result = allocVector(REALSXP, 2)); P++;
@@ -109,7 +109,6 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
 
   /* initialize portfolio HPR object */
   SEXP phpr;
-  PROTECT(phpr = allocVector(REALSXP, i_horizon)); P++;
 
   double I; int J;
   double nr = nrows(prob);
@@ -124,7 +123,8 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
    * perm will have 'i_horizon' elements, else 'perm' will have
    * 'nr' elements */
   SEXP perm;
-  PROTECT(perm = allocVector(INTSXP, using_z ? i_horizon : nr)); P++;
+  PROTECT_INDEX ipx;
+  PROTECT_WITH_INDEX(perm = allocVector(INTSXP, using_z ? i_horizon : nr), &ipx); P++;
   int *i_perm = INTEGER(perm);
 
   /* if lsp object contains z-values of zero, calculate HPR before
@@ -134,8 +134,10 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
      * HPRs in whatever order the are in the lsp object */
     for(j=0; j<nr; j++) i_perm[j] = j;
     /* call lspm::hpr and assign pointer */
-    phpr = hpr(lsp, ScalarLogical(TRUE), perm);
+    PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), perm)); P++;
     d_phpr = REAL(phpr);
+    REPROTECT(perm = lengthgets(perm, i_horizon), ipx);
+    i_perm = INTEGER(perm);
   }
 
   /* Initialize R's random number generator (read in .Random.seed) */
@@ -164,7 +166,7 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
      * each permutation */
     if( using_z ) {
       /* call lspm::hpr and assign pointer */
-      phpr = hpr(lsp, ScalarLogical(TRUE), perm);
+      PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), perm));
       d_phpr = REAL(phpr);
     }
 
@@ -183,8 +185,9 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
         t1hpr = 1;
       }
       /* Keep track of this permutation's probability */
-      probPerm *= d_prob[J];
+      probPerm *= d_prob[i_perm[J]];
     }
+    if(using_z) UNPROTECT(1);  /* UNPROTECT phpr */
     /* If this permutation hit ruin/drawdown limit,
      * add its probability to the total. */
     if( fail ) {
@@ -198,7 +201,7 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   /* Store results */
   d_result[0] = failProb;
   d_result[1] = sumProb;
-  
+
   UNPROTECT(P);
   return result;
 }

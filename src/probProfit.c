@@ -100,7 +100,6 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
 
   /* initialize portfolio HPR object */
   SEXP phpr;
-  PROTECT(phpr = allocVector(REALSXP, i_horizon)); P++;
 
   double I; int J;
   double nr = nrows(prob);
@@ -115,7 +114,8 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
    * perm will have 'i_horizon' elements, else 'perm' will have
    * 'nr' elements */
   SEXP perm;
-  PROTECT(perm = allocVector(INTSXP, using_z ? i_horizon : nr)); P++;
+  PROTECT_INDEX ipx;
+  PROTECT_WITH_INDEX(perm = allocVector(INTSXP, using_z ? i_horizon : nr), &ipx); P++;
   int *i_perm = INTEGER(perm);
 
   /* if lsp object contains z-values of zero, calculate HPR before
@@ -125,8 +125,10 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
      * HPRs in whatever order the are in the lsp object */
     for(j=0; j<nr; j++) i_perm[j] = j;
     /* call lspm::hpr and assign pointer */
-    phpr = hpr(lsp, ScalarLogical(TRUE), perm);
+    PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), perm)); P++;
     d_phpr = REAL(phpr);
+    REPROTECT(perm = lengthgets(perm, i_horizon), ipx);
+    i_perm = INTEGER(perm);
   }
 
   /* Initialize R's random number generator (read in .Random.seed) */
@@ -154,7 +156,7 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
      * each permutation */
     if( using_z ) {
       /* call lspm::hpr and assign pointer */
-      phpr = hpr(lsp, ScalarLogical(TRUE), perm);
+      PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), perm));
       d_phpr = REAL(phpr);
     }
 
@@ -165,8 +167,9 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
       J = using_z ? j : i_perm[j];
       t1hpr *= d_phpr[J];  /* New portfolio balance */
       /* Keep track of this permutation's probability */
-      probPerm *= d_prob[J];
+      probPerm *= d_prob[i_perm[j]];
     }
+    if(using_z) UNPROTECT(1);  /* UNPROTECT phpr */
     /* If this permutation hit its target return,
      * add its probability to the total. */
     if( t1hpr >= (1+d_zval[2]) ) {
@@ -180,7 +183,7 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
   /* Store results */
   d_result[0] = passProb;
   d_result[1] = sumProb;
-  
+
   UNPROTECT(P);
   return result;
 }
