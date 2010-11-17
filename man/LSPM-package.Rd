@@ -13,8 +13,8 @@
   \tabular{ll}{
     Package: \tab LSPM\cr
     Type: \tab Package\cr
-    Version: \tab 0.1-1\cr
-    Date: \tab 2010-07-07\cr
+    Version: \tab 0.1-3\cr
+    Date: \tab 2010-11-16\cr
     License: \tab GPL Version 3 or later\cr
     LazyLoad: \tab yes\cr
   }

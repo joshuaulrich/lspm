@@ -56,6 +56,7 @@ function(lsp, target, horizon, error=0.001, sigma=3, snow=NULL) {
     ind <- list()
     for(i in 1:ncores) ind <- c(ind, list(ij[(i-1)*2+(1:2)]))
 
+    # clusterSetupRNG, if rlecuyer or rsprng installed
     # send the function to the cluster
     ca <- clusterApply(snow, ind, fun=.probProfit, lsp=lsp,
           horizon=horizon, sample)

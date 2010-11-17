@@ -59,6 +59,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
     ind <- list()
     for(i in 1:ncores) ind <- c(ind, list(ij[(i-1)*2+(1:2)]))
 
+    # clusterSetupRNG, if rlecuyer or rsprng installed
     # send the function to the cluster
     ca <- clusterApply(snow, ind, fun=.probRD, DD=DD, lsp=lsp,
                        horizon=horizon, sample, ruin=TRUE)
@@ -116,6 +117,7 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
     ind <- list()
     for(i in 1:ncores) ind <- c(ind, list(ij[(i-1)*2+(1:2)]))
 
+    # clusterSetupRNG, if rlecuyer or rsprng installed
     # send the function to the cluster
     ca <- clusterApply(snow, ind, fun=.probRD, DD=DD, lsp=lsp,
                        horizon=horizon, sample, ruin=FALSE)

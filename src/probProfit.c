@@ -93,7 +93,7 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
   }
 
   /* Initialize R's random number generator (read in .Random.seed) */
-  GetRNGstate();
+  if(i_sample > 0) GetRNGstate();
 
   double probPerm;  /* proability of this permutation */
   double t0hpr;     /* this period's (t = 0) HPR */
@@ -143,7 +143,7 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
     /* Total probability of all permutations */
     sumProb += probPerm;
   }
-  PutRNGstate();  /* Write out .Random.seed */
+  if(i_sample > 0) PutRNGstate();  /* Write out .Random.seed */
 
   /* Store results */
   d_result[0] = passProb;
