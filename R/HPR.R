@@ -21,7 +21,7 @@ HPR <- function(lsp, portfolio=FALSE) {
   if(class(lsp) != "lsp") stop("not a 'lsp' object")
   
   nr <- NROW(lsp$events)
-  order <- as.integer(1:nr)-1
+  order <- as.integer(1:nr-1)
   #if(is.null(order)) {
   #} else {
   #  if(!any(order %in% 1:nr)) {
