@@ -34,19 +34,28 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
   int P=0;  /* PROTECT counter */
   int i, j, k;  /* loop counters */
   
+  if(!inherits(lsp, "lsp")) error("not a 'lsp' object");
+      
   /* extract lsp components */
   double *d_event   = REAL(coerceVector(VECTOR_ELT(lsp, 0),REALSXP));
-  double *d_prob    = REAL(coerceVector(VECTOR_ELT(lsp, 1),REALSXP));
+  //double *d_prob    = REAL(coerceVector(VECTOR_ELT(lsp, 1),REALSXP));
   double *d_fval    = REAL(coerceVector(VECTOR_ELT(lsp, 2),REALSXP));
   double *d_maxloss = REAL(coerceVector(VECTOR_ELT(lsp, 3),REALSXP));
   double *d_zval    = REAL(coerceVector(VECTOR_ELT(lsp, 4),REALSXP));
   
-  int i_port   = INTEGER(coerceVector(port, LGLSXP))[0];
-  int *i_order = INTEGER(coerceVector(order, INTSXP));
-
   /* dimensions of events */
   int nc = ncols(VECTOR_ELT(lsp, 0));
   int nr = nrows(VECTOR_ELT(lsp, 0));
+
+  int *i_order;
+  if(isNull(order)) {  /* create order sequence */
+    PROTECT(order = allocVector(INTSXP, nr)); P++;
+    i_order = INTEGER(order);
+    for(i=0; i < nr; i++) i_order[i] = i;
+  } else {             /* user-provided order sequence */
+    i_order = INTEGER(coerceVector(order, INTSXP));
+  }
+  int i_port = INTEGER(coerceVector(port, LGLSXP))[0];
   int nro = nrows(order);
 
   /* if portfolio-level HPR is requested */
@@ -98,3 +107,34 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
   return result;
 }
 
+SEXP ghpr ( SEXP lsp )
+{
+  if(!inherits(lsp, "lsp")) error("not a 'lsp' object");
+
+  int P=0;  /* PROTECT counter */
+  
+  /* extract lsp components */
+  //double *d_event   = REAL(coerceVector(VECTOR_ELT(lsp, 0),REALSXP));
+  double *d_prob    = REAL(coerceVector(VECTOR_ELT(lsp, 1),REALSXP));
+  //double *d_fval    = REAL(coerceVector(VECTOR_ELT(lsp, 2),REALSXP));
+  //double *d_maxloss = REAL(coerceVector(VECTOR_ELT(lsp, 3),REALSXP));
+  //double *d_zval    = REAL(coerceVector(VECTOR_ELT(lsp, 4),REALSXP));
+  
+  /* calculate portfolio HPR */
+  SEXP phpr;
+  PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), R_NilValue)); P++;
+  double *d_phpr = REAL(phpr);
+
+  int nr = nrows(phpr);
+  double sumProb = 0, result = 1;
+
+  /* calculate GHPR from portfolio HPR */
+  for(int i=0; i < nr; i++) {
+    result *= pow(d_phpr[i], d_prob[i]);
+    sumProb += d_prob[i];
+  }
+  result = pow(result, 1/sumProb);
+
+  UNPROTECT(P);
+  return(ScalarReal(result));
+}
