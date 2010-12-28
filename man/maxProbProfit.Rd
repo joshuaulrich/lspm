@@ -55,7 +55,7 @@
   data(port)
   
   # DEoptim parameters (see ?deoptim)
-  DEctrl <- list(itermax=11, refresh=1, digits=6)
+  DEctrl <- list(itermax=11, trace=1)
   
   # Unconstrained maximum probability of profit
   res <- maxProbProfit(port, 1e-6, 4, control=DEctrl)
@@ -65,11 +65,11 @@
     margin=-port$maxLoss*5, equity=1e6)
 
   # Initial population
-  ipop <- cbind(runif(30,0,0.01),runif(30,0,0.01),runif(30,0,0.01),
-    runif(30,-1,-0.8),runif(30,-1,-0.8))
+  ipop <- cbind(runif(50,0,0.01),runif(50,0,0.01),runif(50,0,0.01),
+    runif(50,-1,-0.8),runif(50,-1,-0.8))
   
   # DEoptim parameters (see ?deoptim)
-  DEctrl <- list(itermax=11, refresh=1, digits=6, initial=ipop)
+  DEctrl <- list(itermax=11, trace=1, initial=ipop)
   
   # Drawdown-constrained maximum probability of profit
   res <- maxProbProfit(port, 1e-6, 4, probDrawdown, 0.1,

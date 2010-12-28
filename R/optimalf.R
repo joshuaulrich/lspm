@@ -37,34 +37,8 @@ optimalf <- function(lsp, constrFun=NULL, constrVal=NULL,
   }
 
   fun <- function(f, lsp, constrFun, constrVal, margin, equity, ...) {
-    lsp$f <- f
-    G <- GHPR(lsp)
-    if(G > 1) {
-      # Margin constraint(s)
-      if(!(is.null(margin) & is.null(equity))) {
-        maxU <- sum( equity * lsp$f * margin / -lsp$maxLoss )
-        if(maxU > equity) return(Inf) 
-      }
-      # The intent here is to allow any constraint function / values
-      # to be passed to the optimizer.
-      # The portion of the list after '...' should be contained in the
-      # soon-to-be-created lsp class.
-      cons <- 0
-      if(!is.null(constrFun)) {
-        cons <- do.call(constrFun, list(lsp, ...))
-        
-        if(cons >= constrVal) {
-          return(Inf)
-        } else {
-          return(-G)
-        }
-      } else {
-        return(-G)
-      }
-    } else {
-      return(Inf)
-    }
-
+    .Call("objFun_optimalf", f, lsp, margin, equity,
+      constrFun, constrVal, new.env(), PACKAGE="LSPM")
   }
 
   # Allow user-specified bounds

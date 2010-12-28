@@ -31,6 +31,7 @@
 SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP horizon,
         SEXP lsp, SEXP ruin, SEXP sample );
 SEXP hpr ( SEXP lsp, SEXP port, SEXP order );
+SEXP ghpr ( SEXP lsp );
 
 #endif
 
