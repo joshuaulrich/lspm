@@ -32,7 +32,7 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
    */
 
   int P=0;  /* PROTECT counter */
-  int i, j, k;  /* loop counters */
+  int i, j;  /* loop counters */
   
   if(!inherits(lsp, "lsp")) error("not a 'lsp' object");
       
@@ -68,8 +68,11 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
 
   /* general HPR incorporating z */
   double e0 = 1, e1 = 1;  /* equity values      */
-  double zz, mul;         /* exponent, multiple */
+  double zz, mul = 1;     /* exponent, multiple */
   double hpr, hprport;
+
+  /* does the lsp object have non-zero z values? */
+  int using_z = (d_zval[0]==0 && d_zval[1]==0) ? 0 : 1;
 
   /* loop over events in 'order' */
   for(j=0; j < nro; j++) {
@@ -77,17 +80,17 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
       d_result[j] = 0;
       continue;
     }
-    /* extract the event location */
-    k = i_order[j];
-    /* calculate martingale exponent */
-    zz = (e1/e0) < (1+d_zval[2]) ? d_zval[0] : d_zval[1];
-    /* calculate multiplier based on zz */
-    mul = pow(e0/e1, 1/(zz+1)-1);
+    if(using_z) {
+      /* calculate martingale exponent */
+      zz = (e1/e0) < (1+d_zval[2]) ? d_zval[0] : d_zval[1];
+      /* calculate multiplier based on zz */
+      mul = pow(e0/e1, 1/(zz+1)-1);
+    }
     hprport = 0;
     /* loop over each system HPR for this period */
     for(i=0; i < nc; i++) {
       /* calculate HPR */
-      hpr = d_fval[i] * d_event[k+i*nr] / -d_maxloss[i] * mul;
+      hpr = d_fval[i] * d_event[i_order[j]+i*nr] / -d_maxloss[i] * mul;
       /* add each system HPR to total portfolio HPR */
       hprport += hpr;
       if( !i_port ) {

@@ -76,25 +76,16 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   /* does the lsp object have non-zero z values? */
   int using_z = (d_zval[0]==0 && d_zval[1]==0) ? 0 : 1;
 
-  /* initialize object to hold permutation locations if using_z,
-   * perm will have 'i_horizon' elements, else 'perm' will have
-   * 'nr' elements */
+  /* initialize object to hold permutation locations */
   SEXP perm;
-  PROTECT_INDEX ipx;
-  PROTECT_WITH_INDEX(perm = allocVector(INTSXP, using_z ? i_horizon : nr), &ipx); P++;
+  PROTECT(perm = allocVector(INTSXP, i_horizon)); P++;
   int *i_perm = INTEGER(perm);
 
   /* if lsp object contains z-values of zero, calculate HPR before
    * running permutations */
   if( !using_z ) {
-    /* in this case order does not matter, so calculate portfolio
-     * HPRs in whatever order the are in the lsp object */
-    for(j=0; j<nr; j++) i_perm[j] = j;
-    /* call lspm::hpr and assign pointer */
-    PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), perm)); P++;
+    PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), R_NilValue)); P++;
     d_phpr = REAL(phpr);
-    REPROTECT(perm = lengthgets(perm, i_horizon), ipx);
-    i_perm = INTEGER(perm);
   }
 
   /* Initialize R's random number generator (read in .Random.seed) */
