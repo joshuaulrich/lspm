@@ -20,7 +20,7 @@
 */
 
 #include <R.h>
-#include <Rinternals.h>
+#include <Rdefines.h>
 #include "lspm.h"
 
 SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
@@ -37,12 +37,12 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
   if(!inherits(lsp, "lsp")) error("not a 'lsp' object");
       
   /* extract lsp components */
-  double *d_event   = REAL(coerceVector(VECTOR_ELT(lsp, 0),REALSXP));
-  //double *d_prob    = REAL(coerceVector(VECTOR_ELT(lsp, 1),REALSXP));
-  double *d_fval    = REAL(coerceVector(VECTOR_ELT(lsp, 2),REALSXP));
-  double *d_maxloss = REAL(coerceVector(VECTOR_ELT(lsp, 3),REALSXP));
-  double *d_zval    = REAL(coerceVector(VECTOR_ELT(lsp, 4),REALSXP));
-  
+  double *d_event   = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 0)))); P++;
+  //double *d_prob    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 1)))); P++;
+  double *d_fval    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 2)))); P++;
+  double *d_maxloss = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 3)))); P++;
+  double *d_zval    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 4)))); P++;
+
   /* dimensions of events */
   int nc = ncols(VECTOR_ELT(lsp, 0));
   int nr = nrows(VECTOR_ELT(lsp, 0));
@@ -55,7 +55,7 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
   } else {             /* user-provided order sequence */
     i_order = INTEGER(coerceVector(order, INTSXP));
   }
-  int i_port = INTEGER(coerceVector(port, LGLSXP))[0];
+  int i_port = asInteger(port);
   int nro = nrows(order);
 
   /* if portfolio-level HPR is requested */
@@ -117,12 +117,12 @@ SEXP ghpr ( SEXP lsp )
   int P=0;  /* PROTECT counter */
   
   /* extract lsp components */
-  //double *d_event   = REAL(coerceVector(VECTOR_ELT(lsp, 0),REALSXP));
-  double *d_prob    = REAL(coerceVector(VECTOR_ELT(lsp, 1),REALSXP));
-  //double *d_fval    = REAL(coerceVector(VECTOR_ELT(lsp, 2),REALSXP));
-  //double *d_maxloss = REAL(coerceVector(VECTOR_ELT(lsp, 3),REALSXP));
-  //double *d_zval    = REAL(coerceVector(VECTOR_ELT(lsp, 4),REALSXP));
-  
+  //double *d_event   = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 0)))); P++;
+  double *d_prob    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 1)))); P++;
+  //double *d_fval    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 2)))); P++;
+  //double *d_maxloss = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 3)))); P++;
+  //double *d_zval    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 4)))); P++;
+
   /* calculate portfolio HPR */
   SEXP phpr;
   PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), R_NilValue)); P++;

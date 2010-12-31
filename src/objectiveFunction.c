@@ -28,13 +28,12 @@ SEXP objFun_optimalf ( SEXP f, SEXP lsp, SEXP margin, SEXP equity,
 {
   int P=0;
   
-  double *d_fval    = REAL(coerceVector(VECTOR_ELT(lsp, 2),REALSXP));
-  double *d_maxloss = REAL(coerceVector(VECTOR_ELT(lsp, 3),REALSXP));
+  double *d_fval    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 2)))); P++;
+  double *d_maxloss = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 3)))); P++;
 
-  double *d_f       = REAL(coerceVector(f,REALSXP));
-  double *d_cFunVal = REAL(coerceVector(constrVal,REALSXP));
-  double *d_margin, d_equity, maxU;
-      
+  double *d_f       = REAL(PROTECT(AS_NUMERIC(f))); P++;
+  double *d_margin, d_equity, maxU;  /* -Wall */
+
   int len = length(f);
 
   /* is changing 'lsp' stupid / dangerous? */
@@ -45,14 +44,14 @@ SEXP objFun_optimalf ( SEXP f, SEXP lsp, SEXP margin, SEXP equity,
   SEXP s_ghpr, s_cval, fcall;
   /* Calculate GHPR */
   PROTECT(s_ghpr = ghpr(lsp)); P++;
-  double d_ghpr = -REAL(s_ghpr)[0];
+  double d_ghpr = -asReal(s_ghpr);
 
   if(d_ghpr < -1) {
     /* Margin constraint */
     if( !isNull(margin) && !isNull(equity) ) {
 
-      d_margin = REAL(coerceVector(margin,REALSXP));
-      d_equity = REAL(coerceVector(equity,REALSXP))[0];
+      d_margin = REAL(PROTECT(AS_NUMERIC(margin))); P++;
+      d_equity = asReal(equity);
 
       maxU = 0;
       for(int i=0; i < len; i++) {
@@ -74,7 +73,7 @@ SEXP objFun_optimalf ( SEXP f, SEXP lsp, SEXP margin, SEXP equity,
       PROTECT(fcall = lang3(constrFun, lsp, R_DotsSymbol)); P++;
       PROTECT(s_cval = eval(fcall, env)); P++;
 
-      if( REAL(coerceVector(s_cval,REALSXP))[0] >= d_cFunVal[0] ) {
+      if( asReal(s_cval) >= asReal(constrVal) ) {
         d_ghpr = R_PosInf;
       }
     }

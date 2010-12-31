@@ -20,8 +20,7 @@
 */
 
 #include <R.h>
-#include <Rinternals.h>
-#include <R_ext/Utils.h>
+#include <Rdefines.h>
 #include "lspm.h"
 
 SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
@@ -45,19 +44,19 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   int i, j;  /* loop counters */
 
   /* extract lsp components */
-  double *d_event = REAL(coerceVector(VECTOR_ELT(lsp, 0),REALSXP));
-  double *d_prob = REAL(coerceVector(VECTOR_ELT(lsp, 1),REALSXP));
-  double *d_fval = REAL(coerceVector(VECTOR_ELT(lsp, 2),REALSXP));
-  double *d_maxloss = REAL(coerceVector(VECTOR_ELT(lsp, 3),REALSXP));
-  double *d_zval = REAL(coerceVector(VECTOR_ELT(lsp, 4),REALSXP));
+  //double *d_event   = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 0)))); P++;
+  double *d_prob    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 1)))); P++;
+  //double *d_fval    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 2)))); P++;
+  //double *d_maxloss = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 3)))); P++;
+  double *d_zval    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 4)))); P++;
 
   /* Get values from pointers */
-  double i_beg = REAL(coerceVector(beg, REALSXP))[0]-1;  /* zero-based */
-  double i_end = REAL(coerceVector(end, REALSXP))[0]-1;  /* zero-based */
-  double i_sample = REAL(coerceVector(sample, REALSXP))[0];
-  double d_dd = REAL(DD)[0];
-  int i_horizon = INTEGER(coerceVector(horizon, INTSXP))[0];
-  int i_ruin = INTEGER(coerceVector(ruin, LGLSXP))[0];
+  double i_beg = asReal(beg)-1;  /* zero-based */
+  double i_end = asReal(end)-1;  /* zero-based */
+  double i_sample = asReal(sample);
+  double d_dd = asReal(DD);
+  int i_horizon = asInteger(horizon);
+  int i_ruin = asInteger(ruin);
 
   /* initialize result object and pointer */
   SEXP result;

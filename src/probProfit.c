@@ -20,7 +20,7 @@
 */
 
 #include <R.h>
-#include <Rinternals.h>
+#include <Rdefines.h>
 #include "lspm.h"
 
 SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
@@ -42,17 +42,17 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
   int i, j;  /* loop counters */
 
   /* extract lsp components */
-  double *d_event = REAL(coerceVector(VECTOR_ELT(lsp, 0),REALSXP));
-  double *d_prob = REAL(coerceVector(VECTOR_ELT(lsp, 1),REALSXP));
-  double *d_fval = REAL(coerceVector(VECTOR_ELT(lsp, 2),REALSXP));
-  double *d_maxloss = REAL(coerceVector(VECTOR_ELT(lsp, 3),REALSXP));
-  double *d_zval = REAL(coerceVector(VECTOR_ELT(lsp, 4),REALSXP));
+  //double *d_event   = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 0)))); P++;
+  double *d_prob    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 1)))); P++;
+  //double *d_fval    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 2)))); P++;
+  //double *d_maxloss = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 3)))); P++;
+  double *d_zval    = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 4)))); P++;
 
   /* Get values from pointers */
-  double i_beg = REAL(coerceVector(beg, REALSXP))[0]-1;  /* zero-based */
-  double i_end = REAL(coerceVector(end, REALSXP))[0]-1;  /* zero-based */
-  double i_sample = REAL(coerceVector(sample, REALSXP))[0];
-  int i_horizon = INTEGER(coerceVector(horizon, INTSXP))[0];
+  double i_beg = asReal(beg)-1;  /* zero-based */
+  double i_end = asReal(end)-1;  /* zero-based */
+  double i_sample = asReal(sample);
+  int i_horizon = asInteger(horizon);
 
   /* initialize result object and pointer */
   SEXP result;
@@ -71,25 +71,16 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
   /* does the lsp object have non-zero z values? */
   int using_z = (d_zval[0]==0 && d_zval[1]==0) ? 0 : 1;
 
-  /* initialize object to hold permutation locations if using_z,
-   * perm will have 'i_horizon' elements, else 'perm' will have
-   * 'nr' elements */
+  /* initialize object to hold permutation locations */
   SEXP perm;
-  PROTECT_INDEX ipx;
-  PROTECT_WITH_INDEX(perm = allocVector(INTSXP, using_z ? i_horizon : nr), &ipx); P++;
+  PROTECT(perm = allocVector(INTSXP, i_horizon)); P++;
   int *i_perm = INTEGER(perm);
 
   /* if lsp object contains z-values of zero, calculate HPR before
    * running permutations */
   if( !using_z ) {
-    /* in this case order does not matter, so calculate portfolio
-     * HPRs in whatever order the are in the lsp object */
-    for(j=0; j<nr; j++) i_perm[j] = j;
-    /* call lspm::hpr and assign pointer */
-    PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), perm)); P++;
+    PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), R_NilValue)); P++;
     d_phpr = REAL(phpr);
-    REPROTECT(perm = lengthgets(perm, i_horizon), ipx);
-    i_perm = INTEGER(perm);
   }
 
   /* Initialize R's random number generator (read in .Random.seed) */
