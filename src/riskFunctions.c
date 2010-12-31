@@ -54,7 +54,7 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   double i_beg = asReal(beg)-1;  /* zero-based */
   double i_end = asReal(end)-1;  /* zero-based */
   double i_sample = asReal(sample);
-  double d_dd = asReal(DD);
+  double d_dd = 1-asReal(DD);
   int i_horizon = asInteger(horizon);
   int i_ruin = asInteger(ruin);
 
@@ -111,8 +111,12 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
     I = (i_sample > 0) ? ( unif_rand() * (i_sample-1) ) : i;
 
     /* set the permutation locations for index 'I' */
-    for(j=0; j<i_horizon; j++) {
+    for(j=i_horizon; j--;) {
       i_perm[j] = (long)fmod(I/pow(nr,j),nr);
+    }
+    /* Keep track of this permutation's probability */
+    for(j=i_horizon; j--;) {
+      probPerm *= d_prob[i_perm[j]];
     }
     /* if lsp object contains non-zero z values, calculate HPR for
      * each permutation */
@@ -129,11 +133,12 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
       J = using_z ? j : i_perm[j];
       t1hpr *= d_phpr[J];  /* New portfolio balance */
       /* if ruin % or max drawdown is hit */
-      if( t1hpr <= (1-d_dd) ) fail = 1;
+      if( t1hpr <= d_dd ) {
+        fail = 1;
+        break;
+      }
       /* If calculating risk drawdown and last period was a new high */
       if( !i_ruin && t1hpr > 1 ) t1hpr = 1;
-      /* Keep track of this permutation's probability */
-      probPerm *= d_prob[i_perm[j]];
     }
     if( using_z ) UNPROTECT(1);  /* UNPROTECT phpr */
     /* If this permutation hit ruin/drawdown limit,

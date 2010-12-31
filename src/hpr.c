@@ -51,7 +51,7 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
   if(isNull(order)) {  /* create order sequence */
     PROTECT(order = allocVector(INTSXP, nr)); P++;
     i_order = INTEGER(order);
-    for(i=0; i < nr; i++) i_order[i] = i;
+    for(i=nr; i--;) i_order[i] = i;
   } else {             /* user-provided order sequence */
     i_order = INTEGER(coerceVector(order, INTSXP));
   }

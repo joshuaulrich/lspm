@@ -89,6 +89,7 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
   double probPerm;  /* proability of this permutation */
   double t0hpr;     /* this period's (t = 0) HPR */
   double t1hpr;     /* last period's (t = 1) HPR */
+  double target = 1+d_zval[2];
     
   /* Loop over each permutation index */
   for(i=i_beg; i<=i_end; i++) {
@@ -105,8 +106,12 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
     I = (i_sample > 0) ? ( unif_rand() * (i_sample-1) ) : i;
 
     /* set the permutation locations for index 'I' */
-    for(j=0; j<i_horizon; j++) {
+    for(j=i_horizon; j--;) {
       i_perm[j] = (long)fmod(I/pow(nr,j),nr);
+    }
+    /* Keep track of this permutation's probability */
+    for(j=i_horizon; j--;) {
+      probPerm *= d_prob[i_perm[j]];
     }
     /* if lsp object contains non-zero z values, calculate HPR for
      * each permutation */
@@ -122,13 +127,11 @@ SEXP prob_profit ( SEXP beg, SEXP end, SEXP lsp,
        * 'nr' elements */
       J = using_z ? j : i_perm[j];
       t1hpr *= d_phpr[J];  /* New portfolio balance */
-      /* Keep track of this permutation's probability */
-      probPerm *= d_prob[i_perm[j]];
     }
     if( using_z ) UNPROTECT(1);  /* UNPROTECT phpr */
     /* If this permutation hit its target return,
      * add its probability to the total. */
-    if( t1hpr >= (1+d_zval[2]) ) {
+    if( t1hpr >= target ) {
       passProb += probPerm;
     }
     /* Total probability of all permutations */
