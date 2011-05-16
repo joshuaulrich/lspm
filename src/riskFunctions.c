@@ -66,7 +66,7 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   /* initialize portfolio HPR object */
   SEXP phpr;
 
-  double I; int J;
+  double I;
   double nr = nrows(VECTOR_ELT(lsp, 1));
   double failProb = 0;
   double sumProb = 0;
@@ -91,7 +91,6 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   if(i_sample > 0) GetRNGstate();
 
   double probPerm;  /* proability of this permutation */
-  double t0hpr;     /* this period's (t = 0) HPR */
   double t1hpr;     /* last period's (t = 1) HPR */
   int fail;         /* fail=1 if ruin or max drawdown is hit */
     
@@ -102,7 +101,6 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
     if( i % 10000 == 999 ) R_CheckUserInterrupt();
 
     probPerm = 1;  /* proability of this permutation */
-    t0hpr = 1;     /* this period's (t = 0) HPR */
     t1hpr = 1;     /* last period's (t = 1) HPR */
     fail = 0;      /* fail=1 if ruin or max drawdown is hit */
     
@@ -118,29 +116,34 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
     for(j=i_horizon; j--;) {
       probPerm *= d_prob[i_perm[j]];
     }
-    /* if lsp object contains non-zero z values, calculate HPR for
-     * each permutation */
+    /* calculate each permutation's HPR if lsp object has no z values */
     if( using_z ) {
       /* call lspm::hpr and assign pointer */
       PROTECT(phpr = hpr(lsp, ScalarLogical(TRUE), perm));
       d_phpr = REAL(phpr);
+
+      for(j=0; j<i_horizon; j++) {   /* loop over permutation locations */
+        t1hpr *= d_phpr[j];          /* New portfolio balance */
+        if( t1hpr <= d_dd ) {        /* if ruin % or max drawdown is hit */
+          fail = 1;
+          break;
+        }
+        /* If calculating risk drawdown and last period was a new high */
+        if( !i_ruin && t1hpr > 1 ) t1hpr = 1;
+      }
+      UNPROTECT(1);  /* UNPROTECT phpr */
+    } else {
+      for(j=0; j<i_horizon; j++) {   /* loop over permutation locations */
+        t1hpr *= d_phpr[i_perm[j]];  /* New portfolio balance */
+        if( t1hpr <= d_dd ) {        /* if ruin % or max drawdown is hit */
+          fail = 1;
+          break;
+        }
+        /* If calculating risk drawdown and last period was a new high */
+        if( !i_ruin && t1hpr > 1 ) t1hpr = 1;
+      }
     }
 
-    /* loop over permutation locations */
-    for(j=0; j<i_horizon; j++) {
-      /* if using_z, phpr has 'i_horizon' elements, else it has
-       * 'nr' elements */
-      J = using_z ? j : i_perm[j];
-      t1hpr *= d_phpr[J];  /* New portfolio balance */
-      /* if ruin % or max drawdown is hit */
-      if( t1hpr <= d_dd ) {
-        fail = 1;
-        break;
-      }
-      /* If calculating risk drawdown and last period was a new high */
-      if( !i_ruin && t1hpr > 1 ) t1hpr = 1;
-    }
-    if( using_z ) UNPROTECT(1);  /* UNPROTECT phpr */
     /* If this permutation hit ruin/drawdown limit,
      * add its probability to the total. */
     if( fail ) {

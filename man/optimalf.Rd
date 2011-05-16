@@ -45,7 +45,7 @@
 \examples{
   data(port)
   
-  # DEoptim parameters (see ?deoptim)
+  # DEoptim parameters (see ?DEoptim)
   DEctrl <- list(NP=30, itermax=100)
 
   # Unconstrainted Optimal f

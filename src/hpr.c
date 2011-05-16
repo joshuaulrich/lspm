@@ -53,7 +53,7 @@ SEXP hpr ( SEXP lsp, SEXP port, SEXP order )
     i_order = INTEGER(order);
     for(i=nr; i--;) i_order[i] = i;
   } else {             /* user-provided order sequence */
-    i_order = INTEGER(coerceVector(order, INTSXP));
+    i_order = INTEGER(PROTECT(AS_INTEGER(order))); P++;
   }
   int i_port = asInteger(port);
   int nro = nrows(order);
