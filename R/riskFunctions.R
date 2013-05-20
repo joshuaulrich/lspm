@@ -21,9 +21,8 @@ probRuin <-
 function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
 
   if( horizon > calc.max ) {
-    rd <- sapply( 1:calc.max, function(i) probRuin(lsp, DD,
-      i, calc.max, error=error, sigma=sigma, snow=snow) )
-    out <- RD.asymptote(rd, horizon, ruin=TRUE)
+    rd <- probRuin(lsp, DD, calc.max, calc.max, error, sigma, snow)
+    out <- RD.asymptote(rd, horizon, ruin=FALSE)
     return(out)
   }
   
@@ -45,8 +44,8 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
     
     # calculate all the permutations on the local machine
     res <- .probRD(c(1,nperm), DD, lsp, horizon, sample, ruin=TRUE)
-    failProb <- res[1]
-    sumProb  <- res[2]
+    failProb <- res$fail
+    sumProb  <- res$sum
   } else {
 
     # number of cores in snow cluster
@@ -65,9 +64,8 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
                        horizon=horizon, sample, ruin=TRUE)
     
     # sum the fail and total probabilities from all the cores
-    seqlen <- 1:length(ca)
-    failProb <- sum( sapply(seqlen, function(i) ca[[i]][1]) )
-    sumProb  <- sum( sapply(seqlen, function(i) ca[[i]][2]) )
+    failProb <- do.call("+", lapply(ca, `[[`, "fail"))
+    sumProb  <- do.call("+", lapply(ca, `[[`, "sum"))
   }
 
   out <- failProb / sumProb
@@ -79,8 +77,7 @@ probDrawdown <-
 function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
 
   if( horizon > calc.max ) {
-    rd <- sapply( 1:calc.max, function(i) probDrawdown(lsp, DD,
-      i, calc.max, error, sigma, snow) )
+    rd <- probDrawdown(lsp, DD, calc.max, calc.max, error, sigma, snow)
     out <- RD.asymptote(rd, horizon, ruin=FALSE)
     return(out)
   }
@@ -103,8 +100,8 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
     
     # calculate all the permutations on the local machine
     res <- .probRD(c(1,nperm), DD, lsp, horizon, sample, ruin=FALSE)
-    failProb <- res[1]
-    sumProb  <- res[2]
+    failProb <- res$fail
+    sumProb  <- res$sum
   } else {
 
     # number of cores in snow cluster
@@ -123,9 +120,8 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
                        horizon=horizon, sample, ruin=FALSE)
     
     # sum the fail and total probabilities from all the cores
-    seqlen <- 1:length(ca)
-    failProb <- sum( sapply(seqlen, function(i) ca[[i]][1]) )
-    sumProb  <- sum( sapply(seqlen, function(i) ca[[i]][2]) )
+    failProb <- do.call("+", lapply(ca, `[[`, "fail"))
+    sumProb  <- do.call("+", lapply(ca, `[[`, "sum"))
   }
 
   # calculate the final probability
@@ -172,12 +168,13 @@ RD.asymptote <- function(RD, horizon, ruin=FALSE) {
   de.coef <- de$optim$bestmem
 
   if(ruin) {
-    out <- de.coef[1] - de.coef[2] * exp( -de.coef[3] * horizon )
+    out <- de.coef[1] - de.coef[2] * exp( -de.coef[3] * seq_len(horizon) )
   } else {
-    out <- 1 - de.coef[1] * exp( -de.coef[2] * horizon )
+    out <- 1 - de.coef[1] * exp( -de.coef[2] * seq_len(horizon) )
   }
 
   names(out) <- NULL
+  out[seq_along(RD)] <- RD
   return(out)
 }
 

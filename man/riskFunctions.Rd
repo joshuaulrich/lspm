@@ -27,7 +27,7 @@
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-  The probability of drawdown or ruin
+  The probability of drawdown or ruin, for all holding periods between 1 and \code{horizon}.
 }
 \references{
   Vince, Ralph (2007) \emph{The Handbook of Portfolio Mathematics}.

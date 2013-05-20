@@ -41,7 +41,7 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
    */
 
   int P=0;  /* PROTECT counter */
-  int i, j;  /* loop counters */
+  int i, j, k;  /* loop counters */
 
   /* extract lsp components */
   //double *d_event   = REAL(PROTECT(AS_NUMERIC(VECTOR_ELT(lsp, 0)))); P++;
@@ -58,18 +58,22 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   int i_horizon = asInteger(horizon);
   int i_ruin = asInteger(ruin);
 
-  /* initialize result object and pointer */
-  SEXP result;
-  PROTECT(result = allocVector(REALSXP, 2)); P++;
-  double *d_result = REAL(result);
+  /* initialize result objects and pointers*/
+  SEXP result, outFail, outSum;
+  PROTECT(outFail = allocVector(REALSXP, i_horizon)); P++;
+  PROTECT(outSum  = allocVector(REALSXP, i_horizon)); P++;
+  double *d_outFail = REAL(outFail);
+  double *d_outSum  = REAL(outSum);
+  for(j=0; j<i_horizon; j++) {
+    d_outFail[j] = 0.0;
+    d_outSum[j] = 0.0;
+  }
 
   /* initialize portfolio HPR object */
   SEXP phpr;
 
   double I;
   double nr = nrows(VECTOR_ELT(lsp, 1));
-  double failProb = 0;
-  double sumProb = 0;
   double *d_phpr = NULL;
 
   /* does the lsp object have non-zero z values? */
@@ -90,9 +94,9 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
   /* Initialize R's random number generator (read in .Random.seed) */
   if(i_sample > 0) GetRNGstate();
 
-  double probPerm;  /* proability of this permutation */
+  /* proabilities for this permutation */
+  double probPerm[i_horizon];
   double t1hpr;     /* last period's (t = 1) HPR */
-  int fail;         /* fail=1 if ruin or max drawdown is hit */
     
   /* Loop over each permutation index */
   for(i=i_beg; i<=i_end; i++) {
@@ -100,9 +104,7 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
     /* check for user-requested interrupt */
     if( i % 10000 == 999 ) R_CheckUserInterrupt();
 
-    probPerm = 1;  /* proability of this permutation */
     t1hpr = 1;     /* last period's (t = 1) HPR */
-    fail = 0;      /* fail=1 if ruin or max drawdown is hit */
     
     /* if sampling, get a random permutation between 0 and nPr-1,
      * else use the current index value. */
@@ -113,8 +115,9 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
       i_perm[j] = (long)fmod(I/pow(nr,j),nr);
     }
     /* Keep track of this permutation's probability */
-    for(j=i_horizon; j--;) {
-      probPerm *= d_prob[i_perm[j]];
+    probPerm[0] = d_prob[i_perm[0]];
+    for(j=1; j<i_horizon; j++) {
+      probPerm[j] = probPerm[j-1] * d_prob[i_perm[j]];
     }
     /* calculate each permutation's HPR if lsp object has no z values */
     if( using_z ) {
@@ -125,7 +128,8 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
       for(j=0; j<i_horizon; j++) {   /* loop over permutation locations */
         t1hpr *= d_phpr[j];          /* New portfolio balance */
         if( t1hpr <= d_dd ) {        /* if ruin % or max drawdown is hit */
-          fail = 1;
+          for(k=j; k<i_horizon; k++)
+            d_outFail[k] += probPerm[k];
           break;
         }
         /* If calculating risk drawdown and last period was a new high */
@@ -136,7 +140,8 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
       for(j=0; j<i_horizon; j++) {   /* loop over permutation locations */
         t1hpr *= d_phpr[i_perm[j]];  /* New portfolio balance */
         if( t1hpr <= d_dd ) {        /* if ruin % or max drawdown is hit */
-          fail = 1;
+          for(k=j; k<i_horizon; k++)
+            d_outFail[k] += probPerm[k];
           break;
         }
         /* If calculating risk drawdown and last period was a new high */
@@ -144,19 +149,18 @@ SEXP probRD ( SEXP beg, SEXP end, SEXP DD, SEXP lsp,
       }
     }
 
-    /* If this permutation hit ruin/drawdown limit,
-     * add its probability to the total. */
-    if( fail ) {
-      failProb += probPerm;
-    }
     /* Total probability of all permutations */
-    sumProb += probPerm;
+    for(j=0; j<i_horizon; j++) {
+      d_outSum[j] += probPerm[j];
+    }
   }
   if(i_sample > 0) PutRNGstate();  /* Write out .Random.seed */
 
   /* Store results */
-  d_result[0] = failProb;
-  d_result[1] = sumProb;
+  const char *result_names[] = {"fail", "sum", ""};
+  PROTECT(result = mkNamed(VECSXP, result_names)); P++;
+  SET_VECTOR_ELT(result, 0, outFail);
+  SET_VECTOR_ELT(result, 1, outSum);
 
   UNPROTECT(P);
   return result;
