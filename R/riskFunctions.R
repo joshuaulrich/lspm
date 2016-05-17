@@ -1,7 +1,7 @@
 #
 #   LSPM: The Leverage Space Portfolio Modeler
 #
-#   Copyright (C) 2009-2010  Soren Macbeth, Joshua Ulrich, and Ralph Vince
+#   Copyright (C) 2009-2016  Soren Macbeth, Joshua Ulrich, and Ralph Vince
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -64,8 +64,8 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
                        horizon=horizon, sample, ruin=TRUE)
     
     # sum the fail and total probabilities from all the cores
-    failProb <- do.call("+", lapply(ca, `[[`, "fail"))
-    sumProb  <- do.call("+", lapply(ca, `[[`, "sum"))
+    failProb <- Reduce("+", lapply(ca, `[[`, "fail"))
+    sumProb  <- Reduce("+", lapply(ca, `[[`, "sum"))
   }
 
   out <- failProb / sumProb
@@ -120,8 +120,8 @@ function(lsp, DD, horizon, calc.max=10, error=0.001, sigma=3, snow=NULL) {
                        horizon=horizon, sample, ruin=FALSE)
     
     # sum the fail and total probabilities from all the cores
-    failProb <- do.call("+", lapply(ca, `[[`, "fail"))
-    sumProb  <- do.call("+", lapply(ca, `[[`, "sum"))
+    failProb <- Reduce("+", lapply(ca, `[[`, "fail"))
+    sumProb  <- Reduce("+", lapply(ca, `[[`, "sum"))
   }
 
   # calculate the final probability
